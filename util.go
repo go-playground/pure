@@ -1,5 +1,10 @@
 package pure
 
+import (
+	"mime"
+	"path/filepath"
+)
+
 func min(a, b int) int {
 
 	if a <= b {
@@ -23,4 +28,11 @@ func countParams(path string) uint8 {
 	}
 
 	return uint8(n)
+}
+
+func detectContentType(filename string) (t string) {
+	if t = mime.TypeByExtension(filepath.Ext(filename)); t == "" {
+		t = OctetStream
+	}
+	return
 }

@@ -2,9 +2,26 @@ package pure
 
 import (
 	"context"
+	"encoding/xml"
 	"net/http"
 	"strings"
 	"sync"
+)
+
+var (
+	bpool = &sync.Pool{
+		New: func() interface{} {
+			return make([]byte, 64)
+		},
+	}
+
+	defaultContextIdentifier = &struct {
+		name string
+	}{
+		name: "pure",
+	}
+
+	xmlHeaderBytes = []byte(xml.Header)
 )
 
 // Pure is the main instance
@@ -493,14 +510,16 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 END:
 
 	if len(rv.params) > 0 {
-		// create requestVars and store on context
 
+		// create requestVars and store on context
 		r = r.WithContext(context.WithValue(r.Context(), defaultContextIdentifier, rv))
 	}
 
 	h(w, r)
 
 	// TODO: test if it's worth caching requestVars or not
+	rv.queryParams = nil
+	rv.r = nil
 	p.pool.Put(rv)
 }
 
