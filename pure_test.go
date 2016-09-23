@@ -52,12 +52,6 @@ func TestAllMethods(t *testing.T) {
 		}
 	})
 
-	tooManyParams := ""
-
-	for i := 0; i < 257; i++ {
-		tooManyParams += "/" + "parm" + strconv.Itoa(i) + "/:parm" + strconv.Itoa(i)
-	}
-
 	tests := []struct {
 		method  string
 		path    string

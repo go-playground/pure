@@ -81,6 +81,7 @@ type Param struct {
 // It is therefore safe to read values by the index.
 type Params []Param
 
+// Get returns the URL parameter for the given key, or blank if not found
 func (p Params) Get(key string) (param string) {
 
 	for i := 0; i < len(p); i++ {

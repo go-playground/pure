@@ -9,8 +9,7 @@ import (
 	"strings"
 )
 
-// URLParam returns the params extracted from the URL
-// not to be confused with Query Parameters
+// RequestVars returns the request scoped variables tracked by pure
 func RequestVars(r *http.Request) ReqVars {
 
 	rv := r.Context().Value(defaultContextIdentifier)
