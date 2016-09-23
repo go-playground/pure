@@ -1,17 +1,16 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"time"
 
 	"github.com/go-playground/pure"
+	mw "github.com/go-playground/pure/examples/middleware/logging-recovery"
 )
 
 func main() {
 
 	p := pure.New()
-	p.Use(logger)
+	p.Use(mw.LoggingAndRecovery)
 
 	p.Get("/", helloWorld)
 
@@ -20,23 +19,4 @@ func main() {
 
 func helloWorld(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello World"))
-}
-
-// logger middleware
-func logger(next http.HandlerFunc) http.HandlerFunc {
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		next(w, r)
-
-		stop := time.Now()
-		path := r.URL.Path
-
-		if path == "" {
-			path = "/"
-		}
-
-		log.Printf("%s %s %s", r.Method, path, stop.Sub(start))
-	}
 }
