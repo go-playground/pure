@@ -62,8 +62,12 @@ URL Params
 ```go
 p := p.New()
 
-// the matching param will be stored in the Context's params with name "id"
+// the matching param will be stored in the context's params with name "id"
 l.Get("/user/:id", UserHandler)
+
+// extract params like so
+rv := pure.ReqestVars(r) // done this way so only have to extract from context once
+rv.Params().Get(paramname)
 
 // serve css, js etc.. pure.RequestVars(r).Params().Get(pure.WildcardParam) will return the remaining path if 
 // you need to use it in a custom handler...
@@ -105,9 +109,9 @@ Decoding Body
 -------------
 currently JSON, XML, FORM + Multipart Form's are support out of the box.
 ```go
-	// first argument denotes yes or no I would like URL query parameter fields
+	// second argument denotes yes or no I would like URL query parameter fields
 	// to be included. i.e. 'id' in route '/user?id=val' should it be included.
-	if err := c.Decode(true, maxBytes, &user); err != nil {
+	if err := pure.Decode(r, true, maxBytes, &user); err != nil {
 		log.Println(err)
 	}
 ```
