@@ -1,8 +1,12 @@
 ##Pure
 <img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">
 ![Project status](https://img.shields.io/badge/version-1.0.0-green.svg)
+[![Build Status](https://semaphoreci.com/api/v1/joeybloggs/pure/branches/master/badge.svg)](https://semaphoreci.com/joeybloggs/pure)
+[![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
 [![GoDoc](https://godoc.org/github.com/go-playground/pure?status.svg)](https://godoc.org/github.com/go-playground/pure)
 ![License](https://img.shields.io/dub/l/vibe-d.svg)
+[![Gitter](https://badges.gitter.im/go-playground/pure.svg)](https://gitter.im/go-playground/pure?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Pure is a fast radix-tree based HTTP router that sticks to the native implimentations of Go's "net/http" package;
 in essence, keeping the handler implimentations 'pure' by using Go 1.7's "context" package.
