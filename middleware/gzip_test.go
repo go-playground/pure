@@ -29,15 +29,15 @@ import (
 
 func TestGzip(t *testing.T) {
 
-	l := pure.New()
-	l.Use(Gzip)
-	l.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+	p := pure.New()
+	p.Use(Gzip)
+	p.Get("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("test"))
 	})
-	l.Get("/empty", func(w http.ResponseWriter, r *http.Request) {
+	p.Get("/empty", func(w http.ResponseWriter, r *http.Request) {
 	})
 
-	server := httptest.NewServer(l.Serve())
+	server := httptest.NewServer(p.Serve())
 	defer server.Close()
 
 	req, _ := http.NewRequest(http.MethodGet, server.URL+"/test", nil)
@@ -81,15 +81,15 @@ func TestGzipLevel(t *testing.T) {
 	// bad gzip level
 	PanicMatches(t, func() { GzipLevel(999) }, "gzip: invalid compression level: 999")
 
-	l := pure.New()
-	l.Use(GzipLevel(flate.BestCompression))
-	l.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+	p := pure.New()
+	p.Use(GzipLevel(flate.BestCompression))
+	p.Get("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("test"))
 	})
-	l.Get("/empty", func(w http.ResponseWriter, r *http.Request) {
+	p.Get("/empty", func(w http.ResponseWriter, r *http.Request) {
 	})
 
-	server := httptest.NewServer(l.Serve())
+	server := httptest.NewServer(p.Serve())
 	defer server.Close()
 
 	req, _ := http.NewRequest(http.MethodGet, server.URL+"/test", nil)

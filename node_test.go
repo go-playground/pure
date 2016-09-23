@@ -19,22 +19,22 @@ import (
 //
 
 func TestAddChain(t *testing.T) {
-	l := New()
+	p := New()
 
-	l.Get("/home", defaultHandler)
+	p.Get("/home", defaultHandler)
 
-	PanicMatches(t, func() { l.Get("/home", defaultHandler) }, "handlers are already registered for path '/home'")
+	PanicMatches(t, func() { p.Get("/home", defaultHandler) }, "handlers are already registered for path '/home'")
 }
 
 func TestBadWildcard(t *testing.T) {
 
-	l := New()
-	PanicMatches(t, func() { l.Get("/test/:test*test", defaultHandler) }, "only one wildcard per path segment is allowed, has: ':test*test' in path '/test/:test*test'")
+	p := New()
+	PanicMatches(t, func() { p.Get("/test/:test*test", defaultHandler) }, "only one wildcard per path segment is allowed, has: ':test*test' in path '/test/:test*test'")
 
-	l.Get("/users/:id/contact-info/:cid", defaultHandler)
-	PanicMatches(t, func() { l.Get("/users/:id/*", defaultHandler) }, "wildcard route '*' conflicts with existing children in path '/users/:id/*'")
-	PanicMatches(t, func() { l.Get("/admin/:/", defaultHandler) }, "wildcards must be named with a non-empty name in path '/admin/:/'")
-	PanicMatches(t, func() { l.Get("/admin/events*", defaultHandler) }, "no / before catch-all in path '/admin/events*'")
+	p.Get("/users/:id/contact-info/:cid", defaultHandler)
+	PanicMatches(t, func() { p.Get("/users/:id/*", defaultHandler) }, "wildcard route '*' conflicts with existing children in path '/users/:id/*'")
+	PanicMatches(t, func() { p.Get("/admin/:/", defaultHandler) }, "wildcards must be named with a non-empty name in path '/admin/:/'")
+	PanicMatches(t, func() { p.Get("/admin/events*", defaultHandler) }, "no / before catch-all in path '/admin/events*'")
 
 	l2 := New()
 	l2.Get("/", defaultHandler)
@@ -52,17 +52,17 @@ func TestBadWildcard(t *testing.T) {
 
 func TestDuplicateParams(t *testing.T) {
 
-	l := New()
-	l.Get("/store/:id", defaultHandler)
-	PanicMatches(t, func() { l.Get("/store/:id/employee/:id", defaultHandler) }, "Duplicate param name ':id' detected for route '/store/:id/employee/:id'")
+	p := New()
+	p.Get("/store/:id", defaultHandler)
+	PanicMatches(t, func() { p.Get("/store/:id/employee/:id", defaultHandler) }, "Duplicate param name ':id' detected for route '/store/:id/employee/:id'")
 
-	l.Get("/company/:id/", defaultHandler)
-	PanicMatches(t, func() { l.Get("/company/:id/employee/:id/", defaultHandler) }, "Duplicate param name ':id' detected for route '/company/:id/employee/:id/'")
+	p.Get("/company/:id/", defaultHandler)
+	PanicMatches(t, func() { p.Get("/company/:id/employee/:id/", defaultHandler) }, "Duplicate param name ':id' detected for route '/company/:id/employee/:id/'")
 }
 
 func TestWildcardParam(t *testing.T) {
-	l := New()
-	l.Get("/users/*", func(w http.ResponseWriter, r *http.Request) {
+	p := New()
+	p.Get("/users/*", func(w http.ResponseWriter, r *http.Request) {
 
 		rv := RequestVars(r)
 		if _, err := w.Write([]byte(rv.URLParam(WildcardParam))); err != nil {
@@ -70,17 +70,17 @@ func TestWildcardParam(t *testing.T) {
 		}
 	})
 
-	code, body := request(http.MethodGet, "/users/testwild", l)
+	code, body := request(http.MethodGet, "/users/testwild", p)
 	Equal(t, code, http.StatusOK)
 	Equal(t, body, "testwild")
 
-	code, body = request(http.MethodGet, "/users/testwildslash/", l)
+	code, body = request(http.MethodGet, "/users/testwildslash/", p)
 	Equal(t, code, http.StatusOK)
 	Equal(t, body, "testwildslash/")
 }
 
 func TestBadRoutes(t *testing.T) {
-	l := New()
+	p := New()
 
-	PanicMatches(t, func() { l.Get("/users//:id", defaultHandler) }, "Bad path '/users//:id' contains duplicate // at index:6")
+	PanicMatches(t, func() { p.Get("/users//:id", defaultHandler) }, "Bad path '/users//:id' contains duplicate // at index:6")
 }

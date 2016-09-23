@@ -38,7 +38,6 @@ type Pure struct {
 	patch   *node
 	custom  map[string]*node
 
-	// TODO: test if it's worth caching requestVars or not
 	// pool is used for reusable request scoped RequestVars content
 	pool sync.Pool
 
@@ -138,8 +137,6 @@ func New() *Pure {
 	}
 
 	p.routeGroup.pure = p
-
-	// TODO: test if it's worth caching requestVars or not
 	p.pool.New = func() interface{} {
 
 		return &requestVars{
@@ -156,8 +153,8 @@ func (p *Pure) Register404(notFound http.HandlerFunc, middleware ...Middleware) 
 
 	h := notFound
 
-	for i := len(p.middleware) - 1; i >= 0; i-- {
-		h = p.middleware[i](h)
+	for i := len(middleware) - 1; i >= 0; i-- {
+		h = middleware[i](h)
 	}
 
 	p.http404 = h
@@ -172,8 +169,8 @@ func (p *Pure) RegisterAutomaticOPTIONS(middleware ...Middleware) {
 
 	h := automaticOPTIONSHandler
 
-	for i := len(p.middleware) - 1; i >= 0; i-- {
-		h = p.middleware[i](h)
+	for i := len(middleware) - 1; i >= 0; i-- {
+		h = middleware[i](h)
 	}
 
 	p.httpOPTIONS = h
@@ -194,18 +191,12 @@ func (p *Pure) RegisterMethodNotAllowed(middleware ...Middleware) {
 
 	h := methodNotAllowedHandler
 
-	for i := len(p.middleware) - 1; i >= 0; i-- {
-		h = p.middleware[i](h)
+	for i := len(middleware) - 1; i >= 0; i-- {
+		h = middleware[i](h)
 	}
 
 	p.http405 = h
 }
-
-// // SetDefaultContextIdentifier tells pure under which key, to store
-// // Context information
-// func (p *Pure) SetDefaultContextIdentifier(key int) {
-// 	p.contextIdentifier = &key
-// }
 
 // Serve returns an http.Handler to be used.
 func (p *Pure) Serve() http.Handler {
@@ -246,16 +237,8 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var h http.HandlerFunc
-	// var rv *requestVars
-	// var params Params
-	// fmt.Println(p.mostParams)
-	// params := make(Params, p.mostParams)
-
-	// TODO: test if it's worth caching requestVars or not
 	rv := p.pool.Get().(*requestVars)
-	// params := rv.params[0:0]
-
-	// 	c.parent.RequestStart(w, r)
+	rv.r = r
 
 	if tree == nil {
 		h = p.http404
@@ -327,9 +310,9 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				w.Header().Add(Allow, http.MethodConnect)
 			}
 
-			if len(p.options.path) > 0 {
-				w.Header().Add(Allow, http.MethodOptions)
-			}
+			// if len(p.options.path) > 0 {
+			// 	w.Header().Add(Allow, http.MethodOptions)
+			// }
 
 			if len(p.patch.path) > 0 {
 				w.Header().Add(Allow, http.MethodPatch)
@@ -381,6 +364,7 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			// options is a given, added below
 			// if len(p.options.path) > 0 && r.Method != http.MethodOptions {
 			// 	if h, _ = p.options.find(r.URL.Path, rv.params[0:0]); h != nil {
 			// 		w.Header().Add(Allow, http.MethodOptions)
@@ -400,10 +384,6 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for m, ctree := range p.custom {
-
-				if m == r.Method || m == http.MethodOptions {
-					continue
-				}
 
 				if h, _ = ctree.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, m)
@@ -466,8 +446,9 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		if len(p.options.path) > 0 && r.Method != http.MethodOptions {
 			if h, _ = p.options.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodOptions)
+				found = true
 			}
-			found = true
+
 		}
 
 		if len(p.patch.path) > 0 && r.Method != http.MethodPatch {
@@ -486,7 +467,7 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 		for m, ctree := range p.custom {
 
-			if m == r.Method || m == http.MethodOptions {
+			if m == r.Method {
 				continue
 			}
 
@@ -515,7 +496,6 @@ END:
 
 	h(w, r)
 
-	// TODO: test if it's worth caching requestVars or not
 	rv.queryParams = nil
 	rv.r = nil
 	p.pool.Put(rv)

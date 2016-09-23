@@ -13,12 +13,12 @@ import (
 // not to be confused with Query Parameters
 func RequestVars(r *http.Request) ReqVars {
 
-	rv := r.Context().Value(defaultContextIdentifier).(*requestVars)
+	rv := r.Context().Value(defaultContextIdentifier)
 	if rv == nil {
 		return &requestVars{r: r}
 	}
 
-	return rv
+	return rv.(*requestVars)
 }
 
 // AcceptedLanguages returns an array of accepted languages denoted by
@@ -188,24 +188,6 @@ func XMLBytes(w http.ResponseWriter, status int, b []byte) (err error) {
 		_, err = w.Write(b)
 	}
 
-	return
-}
-
-// Text returns the provided string with status code
-func Text(w http.ResponseWriter, status int, s string) (err error) {
-
-	w.Header().Set(ContentType, TextPlainCharsetUTF8)
-	w.WriteHeader(status)
-	_, err = w.Write([]byte(s))
-	return
-}
-
-// TextBytes returns the provided response with status code
-func TextBytes(w http.ResponseWriter, status int, b []byte) (err error) {
-
-	w.Header().Set(ContentType, TextPlainCharsetUTF8)
-	w.WriteHeader(status)
-	_, err = w.Write(b)
 	return
 }
 

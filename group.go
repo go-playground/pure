@@ -25,7 +25,6 @@ type IRoutes interface {
 	Head(string, http.HandlerFunc)
 	Connect(string, http.HandlerFunc)
 	Trace(string, http.HandlerFunc)
-	// WebSocket(websocket.Upgrader, string, HandlerFunc)
 }
 
 // routeGroup struct containing all fields and methods for use.
@@ -38,10 +37,6 @@ type routeGroup struct {
 var _ IRouteGroup = &routeGroup{}
 
 func (g *routeGroup) handle(method string, path string, handler http.HandlerFunc) {
-
-	// if len(handlers) == 0 {
-	// 	panic("No handler mapped to path:" + path)
-	// }
 
 	if i := strings.Index(path, "//"); i != -1 {
 		panic("Bad path '" + path + "' contains duplicate // at index:" + strconv.Itoa(i))
@@ -166,25 +161,6 @@ func (g *routeGroup) Match(methods []string, path string, h http.HandlerFunc) {
 		g.handle(m, path, h)
 	}
 }
-
-// // WebSocket adds a websocket route
-// func (g *routeGroup) WebSocket(upgrader websocket.Upgrader, path string, h http.Handler) {
-
-// 	// handler := g.lars.wrapHandler(h)
-// 	g.Get(path, func(c Context) {
-
-// 		ctx := c.BaseContext()
-// 		var err error
-
-// 		ctx.websocket, err = upgrader.Upgrade(ctx.response, ctx.request, nil)
-// 		if err != nil {
-// 			return
-// 		}
-
-// 		defer ctx.websocket.Close()
-// 		c.Next()
-// 	}, handler)
-// }
 
 // Group creates a new sub router with prefix. It inherits all properties from
 // the parent. Passing middleware overrides parent middleware but still keeps

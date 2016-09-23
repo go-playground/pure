@@ -35,6 +35,12 @@ var (
 		rv := RequestVars(r)
 		w.Write([]byte(rv.URLParam("p1") + "|" + rv.URLParam("p2")))
 	}
+
+	defaultMiddleware = func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			next(w, r)
+		}
+	}
 )
 
 func TestAllMethods(t *testing.T) {
@@ -182,16 +188,6 @@ func TestAllMethods(t *testing.T) {
 			code:    http.StatusTemporaryRedirect,
 			body:    "",
 		},
-		// {
-		// 	method: http.MethodPost,
-		// 	path:   tooManyParams,
-		// 	// url:     "/redirect/",
-		// 	handler: defaultHandler,
-		// 	code:    http.StatusTemporaryRedirect,
-		// 	// body:    "",
-		// 	panicExpected: true,
-		// 	panicMsg:      "panic: too many parameters defined in path, max is 255",
-		// },
 	}
 
 	for _, tt := range tests {
@@ -231,24 +227,6 @@ func TestAllMethods(t *testing.T) {
 
 		res := httptest.NewRecorder()
 
-		// if tt.panicExpected {
-
-		// 	PanicMatches(t, func() { hf.ServeHTTP(res, req) }, tt.panicMsg)
-		// var s string
-
-		// fn := func() {
-
-		// 	hf.ServeHTTP(res, req)
-		// }
-
-		// s := recov(fn)
-		// fn()
-
-		// if tt.panicMsg != s {
-		// 	t.Errorf("Expected '%s' Got '%s'", tt.panicMsg, s)
-		// }
-
-		// } else {
 		hf.ServeHTTP(res, req)
 
 		if res.Code != tt.code {
@@ -268,7 +246,71 @@ func TestAllMethods(t *testing.T) {
 				t.Errorf("Expected '%s' Got '%s'", tt.body, s)
 			}
 		}
-		// }
+	}
+
+	// test any
+
+	p2 := New()
+	p2.Any("/test", defaultHandler)
+
+	hf = p2.Serve()
+
+	test2 := []struct {
+		method string
+	}{
+		{
+			method: http.MethodConnect,
+		},
+		{
+			method: http.MethodDelete,
+		},
+		{
+			method: http.MethodGet,
+		},
+		{
+			method: http.MethodHead,
+		},
+		{
+			method: http.MethodOptions,
+		},
+		{
+			method: http.MethodPatch,
+		},
+		{
+			method: http.MethodPost,
+		},
+		{
+			method: http.MethodPut,
+		},
+		{
+			method: http.MethodTrace,
+		},
+	}
+
+	for _, tt := range test2 {
+		req, err := http.NewRequest(tt.method, "/test", nil)
+		if err != nil {
+			t.Errorf("Expected 'nil' Got '%s'", err)
+		}
+
+		res := httptest.NewRecorder()
+
+		hf.ServeHTTP(res, req)
+
+		if res.Code != http.StatusOK {
+			t.Errorf("Expected '%d' Got '%d'", http.StatusOK, res.Code)
+		}
+
+		b, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			t.Errorf("Expected 'nil' Got '%s'", err)
+		}
+
+		s := string(b)
+
+		if s != tt.method {
+			t.Errorf("Expected '%s' Got '%s'", tt.method, s)
+		}
 	}
 }
 
@@ -303,73 +345,57 @@ func TestRouterAPI(t *testing.T) {
 }
 
 func TestMethodNotAllowed(t *testing.T) {
-	l := New()
-	l.RegisterMethodNotAllowed()
+	p := New()
+	p.RegisterMethodNotAllowed(defaultMiddleware)
 
-	l.Put("/home/", defaultHandler)
-	l.Post("/home/", defaultHandler)
-	l.Head("/home/", defaultHandler)
-	l.Delete("/home/", defaultHandler)
-	l.Connect("/home/", defaultHandler)
-	l.Options("/home/", defaultHandler)
-	l.Patch("/home/", defaultHandler)
-	l.Trace("/home/", defaultHandler)
-	l.Handle("PROPFIND", "/home/", defaultHandler)
+	p.Put("/home/", defaultHandler)
+	p.Post("/home/", defaultHandler)
+	p.Head("/home/", defaultHandler)
+	p.Delete("/home/", defaultHandler)
+	p.Connect("/home/", defaultHandler)
+	p.Options("/home/", defaultHandler)
+	p.Patch("/home/", defaultHandler)
+	p.Trace("/home/", defaultHandler)
+	p.Handle("PROPFIND", "/home/", defaultHandler)
+	p.Handle("PROPFIND2", "/home/", defaultHandler)
 
-	// switch r.Method {
-	// case http.MethodGet:
-	// 	tree = p.get
-	// case http.MethodPost:
-	// 	tree = p.post
-	// case http.MethodHead:
-	// 	tree = p.head
-	// case http.MethodPut:
-	// 	tree = p.put
-	// case http.MethodDelete:
-	// 	tree = p.del
-	// case http.MethodConnect:
-	// 	tree = p.connect
-	// case http.MethodOptions:
-	// 	tree = p.options
-	// case http.MethodPatch:
-	// 	tree = p.patch
-	// case http.MethodTrace:
-	// 	tree = p.trace
-	// default:
-	// 	tree = p.custom[r.Method]
-	// }
-
-	code, _ := request(http.MethodPut, "/home/", l)
+	code, _ := request(http.MethodPut, "/home/", p)
 	Equal(t, code, http.StatusOK)
 
 	r, _ := http.NewRequest(http.MethodGet, "/home/", nil)
 	w := httptest.NewRecorder()
-	l.serveHTTP(w, r)
+	p.serveHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusMethodNotAllowed)
 
-	allow, ok := w.Header()["Allow"]
+	allow, ok := w.Header()[Allow]
 	Equal(t, ok, true)
-	Equal(t, len(allow), 9)
+	Equal(t, len(allow), 10)
+
+	r, _ = http.NewRequest("PROPFIND2", "/home/1", nil)
+	w = httptest.NewRecorder()
+	p.serveHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusNotFound)
 }
 
 func TestMethodNotAllowed2(t *testing.T) {
-	l := New()
-	l.RegisterMethodNotAllowed()
+	p := New()
+	p.RegisterMethodNotAllowed()
 
-	l.Get("/home/", defaultHandler)
-	l.Head("/home/", defaultHandler)
+	p.Get("/home/", defaultHandler)
+	p.Head("/home/", defaultHandler)
 
-	code, _ := request(http.MethodGet, "/home/", l)
+	code, _ := request(http.MethodGet, "/home/", p)
 	Equal(t, code, http.StatusOK)
 
 	r, _ := http.NewRequest(http.MethodPost, "/home/", nil)
 	w := httptest.NewRecorder()
-	l.serveHTTP(w, r)
+	p.serveHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusMethodNotAllowed)
 
-	allow, ok := w.Header()["Allow"]
+	allow, ok := w.Header()[Allow]
 
 	// Sometimes this array is out of order for whatever reason?
 	if allow[0] == http.MethodGet {
@@ -381,33 +407,176 @@ func TestMethodNotAllowed2(t *testing.T) {
 		Equal(t, allow[1], http.MethodGet)
 		Equal(t, allow[0], http.MethodHead)
 	}
+}
 
-	// l.SetHandle405MethodNotAllowed(false)
+func TestAutomaticallyHandleOPTIONS(t *testing.T) {
 
-	// code, _ = request(POST, "/home/", l)
-	// Equal(t, code, http.StatusNotFound)
+	p := New()
+	p.RegisterAutomaticOPTIONS(defaultMiddleware)
+	p.Get("/home", defaultHandler)
+	p.Post("/home", defaultHandler)
+	p.Delete("/home", defaultHandler)
+	p.Head("/home", defaultHandler)
+	p.Put("/home", defaultHandler)
+	p.Connect("/home", defaultHandler)
+	p.Patch("/home", defaultHandler)
+	p.Trace("/home", defaultHandler)
+	p.Handle("PROPFIND", "/home", defaultHandler)
 
-	// l2 := New()
-	// l2.SetHandle405MethodNotAllowed(true)
+	code, _ := request(http.MethodGet, "/home", p)
+	Equal(t, code, http.StatusOK)
 
-	// l2.Get("/user/", defaultHandler)
-	// l2.Head("/home/", defaultHandler)
+	r, _ := http.NewRequest(http.MethodOptions, "/home", nil)
+	w := httptest.NewRecorder()
+	p.serveHTTP(w, r)
 
-	// r, _ = http.NewRequest(GET, "/home/", nil)
-	// w = httptest.NewRecorder()
-	// l2.serveHTTP(w, r)
+	Equal(t, w.Code, http.StatusOK)
 
-	// Equal(t, w.Code, http.StatusMethodNotAllowed)
+	allow, ok := w.Header()[Allow]
 
-	// allow, ok = w.Header()["Allow"]
+	Equal(t, ok, true)
+	Equal(t, len(allow), 10)
 
-	// Equal(t, ok, true)
-	// Equal(t, allow[0], HEAD)
+	r, _ = http.NewRequest(http.MethodOptions, "*", nil)
+	w = httptest.NewRecorder()
+	p.serveHTTP(w, r)
 
-	// l2.SetHandle405MethodNotAllowed(false)
+	Equal(t, w.Code, http.StatusOK)
 
-	// code, _ = request(GET, "/home/", l2)
-	// Equal(t, code, http.StatusNotFound)
+	allow, ok = w.Header()[Allow]
+
+	Equal(t, ok, true)
+	Equal(t, len(allow), 10)
+}
+
+func TestRedirect(t *testing.T) {
+
+	p := New()
+
+	p.Get("/home/", defaultHandler)
+	p.Post("/home/", defaultHandler)
+
+	code, _ := request(http.MethodGet, "/home/", p)
+	Equal(t, code, http.StatusOK)
+
+	code, _ = request(http.MethodPost, "/home/", p)
+	Equal(t, code, http.StatusOK)
+
+	code, _ = request(http.MethodGet, "/home", p)
+	Equal(t, code, http.StatusMovedPermanently)
+
+	code, _ = request(http.MethodGet, "/Home/", p)
+	Equal(t, code, http.StatusMovedPermanently)
+
+	code, _ = request(http.MethodPost, "/home", p)
+	Equal(t, code, http.StatusTemporaryRedirect)
+
+	p.SetRedirectTrailingSlash(false)
+
+	code, _ = request(http.MethodGet, "/home/", p)
+	Equal(t, code, http.StatusOK)
+
+	code, _ = request(http.MethodPost, "/home/", p)
+	Equal(t, code, http.StatusOK)
+
+	code, _ = request(http.MethodGet, "/home", p)
+	Equal(t, code, http.StatusNotFound)
+
+	code, _ = request(http.MethodGet, "/Home/", p)
+	Equal(t, code, http.StatusNotFound)
+
+	code, _ = request(http.MethodPost, "/home", p)
+	Equal(t, code, http.StatusNotFound)
+
+	p.SetRedirectTrailingSlash(true)
+
+	p.Get("/users/:id", defaultHandler)
+	p.Get("/users/:id/profile", defaultHandler)
+
+	code, _ = request(http.MethodGet, "/users/10", p)
+	Equal(t, code, http.StatusOK)
+
+	code, _ = request(http.MethodGet, "/users/10/", p)
+	Equal(t, code, http.StatusMovedPermanently)
+
+	p.SetRedirectTrailingSlash(false)
+
+	code, _ = request(http.MethodGet, "/users/10", p)
+	Equal(t, code, http.StatusOK)
+
+	code, _ = request(http.MethodGet, "/users/10/", p)
+	Equal(t, code, http.StatusNotFound)
+}
+
+func TestNotFound(t *testing.T) {
+
+	notFound := func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	}
+
+	p := New()
+	p.Register404(notFound, func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			next(w, r)
+		}
+	})
+
+	p.Get("/home/", defaultHandler)
+	p.Post("/home/", defaultHandler)
+	p.Get("/users/:id", defaultHandler)
+	p.Get("/users/:id/:id2/:id3", defaultHandler)
+
+	code, _ := request("BAD_METHOD", "/home/", p)
+	Equal(t, code, http.StatusNotFound)
+
+	code, _ = request(http.MethodGet, "/users/14/more", p)
+	Equal(t, code, http.StatusNotFound)
+}
+
+func TestBadAdd(t *testing.T) {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		if _, err := w.Write([]byte(r.Method)); err != nil {
+			panic(err)
+		}
+	}
+
+	p := New()
+	PanicMatches(t, func() { p.Get("/%%%2frs#@$/", fn) }, "Query Unescape Error on path '/%%%2frs#@$/': invalid URL escape \"%%%\"")
+
+	// bad existing params
+
+	p.Get("/user/:id", fn)
+	PanicMatches(t, func() { p.Get("/user/:user_id/profile", fn) }, "path segment ':user_id/profile' conflicts with existing wildcard ':id' in path '/user/:user_id/profile'")
+	p.Get("/user/:id/profile", fn)
+
+	p.Get("/admin/:id/profile", fn)
+	PanicMatches(t, func() { p.Get("/admin/:admin_id", fn) }, "path segment ':admin_id' conflicts with existing wildcard ':id' in path '/admin/:admin_id'")
+
+	PanicMatches(t, func() { p.Get("/assets/*/test", fn) }, "Character after the * symbol is not permitted, path '/assets/*/test'")
+
+	p.Get("/superhero/*", fn)
+	PanicMatches(t, func() { p.Get("/superhero/:id", fn) }, "path segment '/:id' conflicts with existing wildcard '/*' in path '/superhero/:id'")
+	PanicMatches(t, func() { p.Get("/superhero/*", fn) }, "handlers are already registered for path '/superhero/*'")
+	PanicMatches(t, func() { p.Get("/superhero/:id/", fn) }, "path segment '/:id/' conflicts with existing wildcard '/*' in path '/superhero/:id/'")
+
+	p.Get("/supervillain/:id", fn)
+	PanicMatches(t, func() { p.Get("/supervillain/*", fn) }, "path segment '*' conflicts with existing wildcard ':id' in path '/supervillain/*'")
+	PanicMatches(t, func() { p.Get("/supervillain/:id", fn) }, "handlers are already registered for path '/supervillain/:id'")
+}
+
+func TestBasePath(t *testing.T) {
+
+	p := New()
+	p.Get("", defaultHandler)
+
+	code, _ := request(http.MethodGet, "/", p)
+	Equal(t, code, http.StatusOK)
+
+}
+
+type zombie struct {
+	ID   int    `json:"id"   xml:"id"`
+	Name string `json:"name" xml:"name"`
 }
 
 type route struct {
