@@ -86,7 +86,7 @@ func (p Params) Get(key string) (param string) {
 
 	for i := 0; i < len(p); i++ {
 		if p[i].Key == key {
-			param = p[i].Key
+			param = p[i].Value
 			return
 		}
 	}
@@ -264,8 +264,6 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if h, rv.params = tree.find(r.URL.Path, rv.params[0:0]); h == nil {
 
-		// params = params[0:0]
-
 		if p.redirectTrailingSlash && len(r.URL.Path) > 1 {
 
 			// find again all lowercase
@@ -348,66 +346,66 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 
 			if len(p.get.path) > 0 && r.Method != http.MethodGet {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.get.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodGet)
 				}
 			}
 
 			if len(p.post.path) > 0 && r.Method != http.MethodPost {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.post.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodPost)
 				}
 			}
 
 			if len(p.head.path) > 0 && r.Method != http.MethodHead {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.head.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodHead)
 				}
 			}
 
 			if len(p.put.path) > 0 && r.Method != http.MethodPut {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.put.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodPut)
 				}
 			}
 
 			if len(p.del.path) > 0 && r.Method != http.MethodDelete {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.del.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodDelete)
 				}
 			}
 
 			if len(p.connect.path) > 0 && r.Method != http.MethodConnect {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.connect.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodConnect)
 				}
 			}
 
 			// if len(p.options.path) > 0 && r.Method != http.MethodOptions {
-			// 	if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			// 	if h, _ = p.options.find(r.URL.Path, rv.params[0:0]); h != nil {
 			// 		w.Header().Add(Allow, http.MethodOptions)
 			// 	}
 			// }
 
 			if len(p.patch.path) > 0 && r.Method != http.MethodPatch {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.patch.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodPatch)
 				}
 			}
 
 			if len(p.trace.path) > 0 && r.Method != http.MethodTrace {
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = p.trace.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, http.MethodTrace)
 				}
 			}
 
-			for m := range p.custom {
+			for m, ctree := range p.custom {
 
 				if m == r.Method || m == http.MethodOptions {
 					continue
 				}
 
-				if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = ctree.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, m)
 				}
 			}
@@ -424,75 +422,75 @@ func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		var found bool
 
 		if len(p.get.path) > 0 && r.Method != http.MethodGet {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.get.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodGet)
 				found = true
 			}
 		}
 
 		if len(p.post.path) > 0 && r.Method != http.MethodPost {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.post.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodPost)
 				found = true
 			}
 		}
 
 		if len(p.head.path) > 0 && r.Method != http.MethodHead {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.head.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodHead)
 				found = true
 			}
 		}
 
 		if len(p.put.path) > 0 && r.Method != http.MethodPut {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.put.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodPut)
 				found = true
 			}
 		}
 
 		if len(p.del.path) > 0 && r.Method != http.MethodDelete {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.del.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodDelete)
 				found = true
 			}
 		}
 
 		if len(p.connect.path) > 0 && r.Method != http.MethodConnect {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.connect.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodConnect)
 				found = true
 			}
 		}
 
 		if len(p.options.path) > 0 && r.Method != http.MethodOptions {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.options.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodOptions)
 			}
 			found = true
 		}
 
 		if len(p.patch.path) > 0 && r.Method != http.MethodPatch {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.patch.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodPatch)
 				found = true
 			}
 		}
 
 		if len(p.trace.path) > 0 && r.Method != http.MethodTrace {
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = p.trace.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, http.MethodTrace)
 				found = true
 			}
 		}
 
-		for m := range p.custom {
+		for m, ctree := range p.custom {
 
 			if m == r.Method || m == http.MethodOptions {
 				continue
 			}
 
-			if h, _ = tree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = ctree.find(r.URL.Path, rv.params[0:0]); h != nil {
 				w.Header().Add(Allow, m)
 				found = true
 			}
