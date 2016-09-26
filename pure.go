@@ -24,8 +24,8 @@ var (
 	xmlHeaderBytes = []byte(xml.Header)
 )
 
-// Pure is the main instance
-type Pure struct {
+// Mux is the main request multiplexer
+type Mux struct {
 	routeGroup
 	get     *node
 	post    *node
@@ -112,9 +112,9 @@ var (
 )
 
 // New Creates and returns a new Pure instance
-func New() *Pure {
+func New() *Mux {
 
-	p := &Pure{
+	p := &Mux{
 		routeGroup: routeGroup{
 			middleware: make([]Middleware, 0),
 		},
@@ -150,7 +150,7 @@ func New() *Pure {
 
 // Register404 alows for overriding of the not found handler function.
 // NOTE: this is run after not finding a route even after redirecting with the trailing slash
-func (p *Pure) Register404(notFound http.HandlerFunc, middleware ...Middleware) {
+func (p *Mux) Register404(notFound http.HandlerFunc, middleware ...Middleware) {
 
 	h := notFound
 
@@ -164,7 +164,7 @@ func (p *Pure) Register404(notFound http.HandlerFunc, middleware ...Middleware) 
 // RegisterAutomaticOPTIONS tells pure whether to
 // automatically handle OPTION requests; manually configured
 // OPTION handlers take precedence. default true
-func (p *Pure) RegisterAutomaticOPTIONS(middleware ...Middleware) {
+func (p *Mux) RegisterAutomaticOPTIONS(middleware ...Middleware) {
 
 	p.automaticallyHandleOPTIONS = true
 
@@ -180,13 +180,13 @@ func (p *Pure) RegisterAutomaticOPTIONS(middleware ...Middleware) {
 // SetRedirectTrailingSlash tells pure whether to try
 // and fix a URL by trying to find it
 // lowercase -> with or without slash -> 404
-func (p *Pure) SetRedirectTrailingSlash(set bool) {
+func (p *Mux) SetRedirectTrailingSlash(set bool) {
 	p.redirectTrailingSlash = set
 }
 
 // RegisterMethodNotAllowed tells pure whether to
 // handle the http 405 Method Not Allowed status code
-func (p *Pure) RegisterMethodNotAllowed(middleware ...Middleware) {
+func (p *Mux) RegisterMethodNotAllowed(middleware ...Middleware) {
 
 	p.handleMethodNotAllowed = true
 
@@ -200,7 +200,7 @@ func (p *Pure) RegisterMethodNotAllowed(middleware ...Middleware) {
 }
 
 // Serve returns an http.Handler to be used.
-func (p *Pure) Serve() http.Handler {
+func (p *Mux) Serve() http.Handler {
 
 	// reserved for any logic that needs to happen before serving starts.
 	// i.e. although this router does not use priority to determine route order
@@ -210,7 +210,7 @@ func (p *Pure) Serve() http.Handler {
 }
 
 // Conforms to the http.Handler interface.
-func (p *Pure) serveHTTP(w http.ResponseWriter, r *http.Request) {
+func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var tree *node
 
@@ -504,7 +504,7 @@ END:
 	p.pool.Put(rv)
 }
 
-func (p *Pure) redirect(method string, to string) (h http.HandlerFunc) {
+func (p *Mux) redirect(method string, to string) (h http.HandlerFunc) {
 
 	code := http.StatusMovedPermanently
 

@@ -858,7 +858,7 @@ func (c *closeNotifyingRecorder) CloseNotify() <-chan bool {
 	return c.closed
 }
 
-func request(method, path string, p *Pure) (int, string) {
+func request(method, path string, p *Mux) (int, string) {
 	r, _ := http.NewRequest(method, path, nil)
 	w := &closeNotifyingRecorder{
 		httptest.NewRecorder(),
@@ -869,7 +869,7 @@ func request(method, path string, p *Pure) (int, string) {
 	return w.Code, w.Body.String()
 }
 
-func requestMultiPart(method string, url string, p *Pure) (int, string) {
+func requestMultiPart(method string, url string, p *Mux) (int, string) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)

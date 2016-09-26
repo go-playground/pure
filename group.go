@@ -31,7 +31,7 @@ type IRoutes interface {
 type routeGroup struct {
 	prefix     string
 	middleware []Middleware
-	pure       *Pure
+	pure       *Mux
 }
 
 var _ IRouteGroup = &routeGroup{}
