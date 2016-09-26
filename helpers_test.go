@@ -88,13 +88,17 @@ func TestDecode(t *testing.T) {
 		err := Decode(r, false, 16<<10, test)
 		Equal(t, err, nil)
 	})
+	p.Post("/decode3/:id", func(w http.ResponseWriter, r *http.Request) {
+		err := Decode(r, true, 16<<10, test)
+		Equal(t, err, nil)
+	})
 
 	hf := p.Serve()
 
 	form := url.Values{}
 	form.Add("Posted", "value")
 
-	r, _ := http.NewRequest(http.MethodPost, "/decode/13?id=13", strings.NewReader(form.Encode()))
+	r, _ := http.NewRequest(http.MethodPost, "/decode/14?id=13", strings.NewReader(form.Encode()))
 	r.Header.Set(ContentType, ApplicationForm)
 	w := httptest.NewRecorder()
 
@@ -102,6 +106,17 @@ func TestDecode(t *testing.T) {
 
 	Equal(t, w.Code, http.StatusOK)
 	Equal(t, test.ID, 13)
+	Equal(t, test.Posted, "value")
+	Equal(t, test.MultiPartPosted, "")
+
+	r, _ = http.NewRequest(http.MethodPost, "/decode/14", strings.NewReader(form.Encode()))
+	r.Header.Set(ContentType, ApplicationForm)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 14)
 	Equal(t, test.Posted, "value")
 	Equal(t, test.MultiPartPosted, "")
 
@@ -158,6 +173,28 @@ func TestDecode(t *testing.T) {
 	hf.ServeHTTP(w, r)
 	Equal(t, w.Code, http.StatusOK)
 	Equal(t, test.ID, 0)
+	Equal(t, test.Posted, "")
+	Equal(t, test.MultiPartPosted, "value")
+
+	body = &bytes.Buffer{}
+	writer = multipart.NewWriter(body)
+
+	err = writer.WriteField("MultiPartPosted", "value")
+	Equal(t, err, nil)
+
+	// Don't forget to close the multipart writer.
+	// If you don't close it, your request will be missing the terminating boundary.
+	err = writer.Close()
+	Equal(t, err, nil)
+
+	test = new(TestStruct)
+	r, _ = http.NewRequest(http.MethodPost, "/decode3/11", body)
+	r.Header.Set(ContentType, writer.FormDataContentType())
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 11)
 	Equal(t, test.Posted, "")
 	Equal(t, test.MultiPartPosted, "value")
 
@@ -445,6 +482,46 @@ func TestXML(t *testing.T) {
 	Equal(t, w.Code, http.StatusInternalServerError)
 	Equal(t, w.Header().Get(ContentType), TextPlainCharsetUTF8)
 	Equal(t, w.Body.String(), "xml: unsupported type: func()\n")
+}
+
+func TestBadParseForm(t *testing.T) {
+
+	// successful scenarios tested under TestDecode
+
+	p := New()
+	p.Get("/users/:id", func(w http.ResponseWriter, r *http.Request) {
+
+		if err := ParseForm(r); err != nil {
+			if _, errr := w.Write([]byte(err.Error())); errr != nil {
+				panic(errr)
+			}
+			return
+		}
+	})
+
+	code, body := request(http.MethodGet, "/users/16?test=%2f%%efg", p)
+	Equal(t, code, http.StatusOK)
+	Equal(t, body, "invalid URL escape \"%%e\"")
+}
+
+func TestBadParseMultiPartForm(t *testing.T) {
+
+	// successful scenarios tested under TestDecode
+
+	p := New()
+	p.Get("/users/:id", func(w http.ResponseWriter, r *http.Request) {
+
+		if err := ParseMultipartForm(r, 10<<5); err != nil {
+			if _, errr := w.Write([]byte(err.Error())); errr != nil {
+				panic(err)
+			}
+			return
+		}
+	})
+
+	code, body := requestMultiPart(http.MethodGet, "/users/16?test=%2f%%efg", p)
+	Equal(t, code, http.StatusOK)
+	Equal(t, body, "invalid URL escape \"%%e\"")
 }
 
 type gzipWriter struct {

@@ -16,6 +16,7 @@ type requestVars struct {
 	r           *http.Request
 	params      Params
 	queryParams url.Values
+	formParsed  bool
 }
 
 // Params returns the current routes Params

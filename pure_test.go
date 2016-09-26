@@ -1,7 +1,11 @@
 package pure
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -863,4 +867,42 @@ func request(method, path string, p *Pure) (int, string) {
 	hf := p.Serve()
 	hf.ServeHTTP(w, r)
 	return w.Code, w.Body.String()
+}
+
+func requestMultiPart(method string, url string, p *Pure) (int, string) {
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	part, err := writer.CreateFormFile("file", "test.txt")
+	if err != nil {
+		fmt.Println("ERR FILE:", err)
+	}
+
+	buff := bytes.NewBufferString("FILE TEST DATA")
+	_, err = io.Copy(part, buff)
+	if err != nil {
+		fmt.Println("ERR COPY:", err)
+	}
+
+	err = writer.WriteField("username", "joeybloggs")
+	if err != nil {
+		fmt.Println("ERR:", err)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		fmt.Println("ERR:", err)
+	}
+
+	r, _ := http.NewRequest(method, url, body)
+	r.Header.Set(ContentType, writer.FormDataContentType())
+	wr := &closeNotifyingRecorder{
+		httptest.NewRecorder(),
+		make(chan bool, 1),
+	}
+	hf := p.Serve()
+	hf.ServeHTTP(wr, r)
+
+	return wr.Code, wr.Body.String()
 }

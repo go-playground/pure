@@ -190,10 +190,68 @@ func XMLBytes(w http.ResponseWriter, status int, b []byte) (err error) {
 	return
 }
 
+// ParseForm calls the underlying http.Request ParseForm
+// but also adds the URL params to the request Form as if
+// they were defined as query params i.e. ?id=13&ok=true but
+// does not add the params to the http.Request.URL.RawQuery
+// for SEO purposes
+func ParseForm(r *http.Request) error {
+
+	if err := r.ParseForm(); err != nil {
+		return err
+	}
+
+	if rvi := r.Context().Value(defaultContextIdentifier); rvi != nil {
+
+		rv := rvi.(*requestVars)
+
+		if !rv.formParsed {
+			for _, p := range rv.params {
+				r.Form.Add(p.Key, p.Value)
+			}
+
+			rv.formParsed = true
+		}
+	}
+
+	return nil
+}
+
+// ParseMultipartForm calls the underlying http.Request ParseMultipartForm
+// but also adds the URL params to the request Form as if they were defined
+// as query params i.e. ?id=13&ok=true but does not add the params to the
+// http.Request.URL.RawQuery for SEO purposes
+func ParseMultipartForm(r *http.Request, maxMemory int64) error {
+
+	if err := r.ParseMultipartForm(maxMemory); err != nil {
+		return err
+	}
+
+	if rvi := r.Context().Value(defaultContextIdentifier); rvi != nil {
+
+		rv := rvi.(*requestVars)
+
+		if !rv.formParsed {
+			for _, p := range rv.params {
+				r.Form.Add(p.Key, p.Value)
+			}
+
+			rv.formParsed = true
+		}
+	}
+
+	return nil
+}
+
 // Decode takes the request and attempts to discover it's content type via
 // the http headers and then decode the request body into the provided struct.
 // Example if header was "application/json" would decode using
 // json.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v).
+//
+// NOTE: when includeFormQueryParams=true both query params and SEO query params will be parsed and
+// included eg. route /user/:id?test=true both 'id' and 'test' are treated as query params and added
+// to the request.Form prior to decoding; in short SEO query params are treated just like normal
+// query params.
 func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v interface{}) (err error) {
 
 	typ := r.Header.Get(ContentType)
@@ -212,20 +270,28 @@ func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v int
 
 	case ApplicationForm:
 
-		if err = r.ParseForm(); err == nil {
-			if includeFormQueryParams {
+		if includeFormQueryParams {
+
+			if err = ParseForm(r); err == nil {
 				err = DefaultDecoder.Decode(v, r.Form)
-			} else {
+			}
+
+		} else {
+			if err = r.ParseForm(); err == nil {
 				err = DefaultDecoder.Decode(v, r.PostForm)
 			}
 		}
 
 	case MultipartForm:
 
-		if err = r.ParseMultipartForm(maxMemory); err == nil {
-			if includeFormQueryParams {
+		if includeFormQueryParams {
+
+			if err = ParseMultipartForm(r, maxMemory); err == nil {
 				err = DefaultDecoder.Decode(v, r.Form)
-			} else {
+			}
+
+		} else {
+			if err = r.ParseMultipartForm(maxMemory); err == nil {
 				err = DefaultDecoder.Decode(v, r.MultipartForm.Value)
 			}
 		}

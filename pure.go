@@ -491,6 +491,8 @@ END:
 
 	if len(rv.params) > 0 {
 
+		rv.formParsed = false
+
 		// create requestVars and store on context
 		r = r.WithContext(context.WithValue(r.Context(), defaultContextIdentifier, rv))
 	}
