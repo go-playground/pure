@@ -55,16 +55,13 @@ func Gzip(next http.HandlerFunc) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var gz *gzipWriter
-		var gzr *gzip.Writer
-
 		w.Header().Add(pure.Vary, pure.AcceptEncoding)
 
 		if strings.Contains(r.Header.Get(pure.AcceptEncoding), pure.Gzip) {
 
-			gz = gzipPool.Get().(*gzipWriter)
+			gz := gzipPool.Get().(*gzipWriter)
 			gz.sniffComplete = false
-			gzr = gz.Writer.(*gzip.Writer)
+			gzr := gz.Writer.(*gzip.Writer)
 			gzr.Reset(w)
 			gz.ResponseWriter = w
 
@@ -112,16 +109,13 @@ func GzipLevel(level int) pure.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
-			var gz *gzipWriter
-			var gzr *gzip.Writer
-
 			w.Header().Add(pure.Vary, pure.AcceptEncoding)
 
 			if strings.Contains(r.Header.Get(pure.AcceptEncoding), pure.Gzip) {
 
-				gz = gzipPool.Get().(*gzipWriter)
+				gz := gzipPool.Get().(*gzipWriter)
 				gz.sniffComplete = false
-				gzr = gz.Writer.(*gzip.Writer)
+				gzr := gz.Writer.(*gzip.Writer)
 				gzr.Reset(w)
 				gz.ResponseWriter = w
 
