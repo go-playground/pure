@@ -295,6 +295,21 @@ func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v int
 				err = DefaultDecoder.Decode(v, r.MultipartForm.Value)
 			}
 		}
+
+	case ApplicationQueryParams:
+
+		qp := r.URL.Query()
+
+		if rvi := r.Context().Value(defaultContextIdentifier); rvi != nil {
+
+			rv := rvi.(*requestVars)
+
+			for _, p := range rv.params {
+				qp.Add(p.Key, p.Value)
+			}
+		}
+
+		err = DefaultDecoder.Decode(v, qp)
 	}
 	return
 }

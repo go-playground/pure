@@ -2,24 +2,6 @@ package pure
 
 // HTTP Constant Terms and Variables
 const (
-	// // CONNECT HTTP method
-	// CONNECT = "CONNECT"
-	// // DELETE HTTP method
-	// DELETE = "DELETE"
-	// // GET HTTP method
-	// GET = "GET"
-	// // HEAD HTTP method
-	// HEAD = "HEAD"
-	// // OPTIONS HTTP method
-	// OPTIONS = "OPTIONS"
-	// // PATCH HTTP method
-	// PATCH = "PATCH"
-	// // POST HTTP method
-	// POST = "POST"
-	// // PUT HTTP method
-	// PUT = "PUT"
-	// // TRACE HTTP method
-	// TRACE = "TRACE"
 
 	//-------------
 	// Media types
@@ -32,6 +14,7 @@ const (
 	ApplicationXML                   = "application/xml"
 	ApplicationXMLCharsetUTF8        = ApplicationXML + "; " + CharsetUTF8
 	ApplicationForm                  = "application/x-www-form-urlencoded"
+	ApplicationQueryParams           = ""
 	ApplicationProtobuf              = "application/protobuf"
 	ApplicationMsgpack               = "application/msgpack"
 	TextHTML                         = "text/html"

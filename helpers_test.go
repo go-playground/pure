@@ -92,15 +92,30 @@ func TestDecode(t *testing.T) {
 		err := Decode(r, true, 16<<10, test)
 		Equal(t, err, nil)
 	})
+	p.Get("/parse-params/:Posted", func(w http.ResponseWriter, r *http.Request) {
+		err := Decode(r, true, 16<<10, test)
+		Equal(t, err, nil)
+	})
 
 	hf := p.Serve()
+
+	r, _ := http.NewRequest(http.MethodGet, "/parse-params/pval?id=5", nil)
+	w := httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 5)
+	Equal(t, test.Posted, "pval")
+	Equal(t, test.MultiPartPosted, "")
 
 	form := url.Values{}
 	form.Add("Posted", "value")
 
-	r, _ := http.NewRequest(http.MethodPost, "/decode/14?id=13", strings.NewReader(form.Encode()))
+	test = new(TestStruct)
+	r, _ = http.NewRequest(http.MethodPost, "/decode/14?id=13", strings.NewReader(form.Encode()))
 	r.Header.Set(ContentType, ApplicationForm)
-	w := httptest.NewRecorder()
+	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
 
@@ -109,6 +124,7 @@ func TestDecode(t *testing.T) {
 	Equal(t, test.Posted, "value")
 	Equal(t, test.MultiPartPosted, "")
 
+	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/14", strings.NewReader(form.Encode()))
 	r.Header.Set(ContentType, ApplicationForm)
 	w = httptest.NewRecorder()
