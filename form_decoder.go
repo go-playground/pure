@@ -13,6 +13,5 @@ type FormDecoder interface {
 
 var (
 	// DefaultDecoder is pure's default form decoder
-	DefaultDecoder             = form.NewDecoder()
-	_              FormDecoder = DefaultDecoder
+	DefaultDecoder FormDecoder = form.NewDecoder()
 )
