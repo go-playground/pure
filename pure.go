@@ -509,7 +509,7 @@ func (p *Mux) redirect(method string, to string) (h http.HandlerFunc) {
 	code := http.StatusMovedPermanently
 
 	if method != http.MethodGet {
-		code = http.StatusTemporaryRedirect
+		code = http.StatusPermanentRedirect
 	}
 
 	h = func(w http.ResponseWriter, r *http.Request) {

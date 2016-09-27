@@ -183,7 +183,7 @@ func TestAllMethods(t *testing.T) {
 			path:    "/redirect",
 			url:     "/redirect/",
 			handler: defaultHandler,
-			code:    http.StatusTemporaryRedirect,
+			code:    http.StatusPermanentRedirect,
 			body:    "",
 		},
 	}
@@ -467,7 +467,7 @@ func TestRedirect(t *testing.T) {
 	Equal(t, code, http.StatusMovedPermanently)
 
 	code, _ = request(http.MethodPost, "/home", p)
-	Equal(t, code, http.StatusTemporaryRedirect)
+	Equal(t, code, http.StatusPermanentRedirect)
 
 	p.SetRedirectTrailingSlash(false)
 
