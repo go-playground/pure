@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/go-playground/pure"
 )
 
 // ANSIEscSeq is a predefined ANSI escape sequence
@@ -34,6 +36,13 @@ const (
 	Blink                   = "\x1b[5m"
 	Inverse                 = "\x1b[7m"
 	Reset                   = "\x1b[0m"
+)
+
+const (
+	status500 = Underscore + Blink + Red
+	status400 = Red
+	status300 = Yellow
+	status    = Green
 )
 
 type logWriter struct {
@@ -89,50 +98,84 @@ var lrpool = sync.Pool{
 }
 
 // LoggingAndRecovery handle HTTP request logging + recovery
-func LoggingAndRecovery(next http.HandlerFunc) http.HandlerFunc {
+func LoggingAndRecovery(color bool) pure.Middleware {
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(next http.HandlerFunc) http.HandlerFunc {
 
-		t1 := time.Now()
+		if color {
 
-		lw := lrpool.Get().(*logWriter)
-		lw.status = 200
-		lw.size = 0
-		lw.committed = false
-		lw.ResponseWriter = w
+			return func(w http.ResponseWriter, r *http.Request) {
 
-		defer func() {
-			if err := recover(); err != nil {
-				trace := make([]byte, 1<<16)
-				n := runtime.Stack(trace, true)
-				log.Printf(" %srecovering from panic: %+v\nStack Trace:\n %s%s", Red, err, trace[:n], Reset)
-				HandlePanic(lw, r, trace[:n])
+				t1 := time.Now()
 
-				lrpool.Put(lw)
-				return
+				lw := lrpool.Get().(*logWriter)
+				lw.status = 200
+				lw.size = 0
+				lw.committed = false
+				lw.ResponseWriter = w
+
+				defer func() {
+					if err := recover(); err != nil {
+						trace := make([]byte, 1<<16)
+						n := runtime.Stack(trace, true)
+						log.Printf(" %srecovering from panic: %+v\nStack Trace:\n %s%s", Red, err, trace[:n], Reset)
+						HandlePanic(lw, r, trace[:n])
+
+						lrpool.Put(lw)
+						return
+					}
+
+					lrpool.Put(lw)
+				}()
+
+				next(lw, r)
+
+				// var color string
+				color := status
+
+				code := lw.Status()
+
+				switch {
+				case code >= http.StatusInternalServerError:
+					color = status500
+				case code >= http.StatusBadRequest:
+					color = status400
+				case code >= http.StatusMultipleChoices:
+					color = status300
+				default:
+					color = status
+				}
+
+				log.Printf("%s %d %s[%s%s%s] %q %v %d\n", color, code, Reset, color, r.Method, Reset, r.URL, time.Since(t1), lw.Size())
 			}
-
-			lrpool.Put(lw)
-		}()
-
-		next(lw, r)
-
-		var color string
-
-		code := lw.Status()
-
-		switch {
-		case code >= http.StatusInternalServerError:
-			color = Underscore + Blink + Red
-		case code >= http.StatusBadRequest:
-			color = Red
-		case code >= http.StatusMultipleChoices:
-			color = Yellow
-		default:
-			color = Green
 		}
 
-		log.Printf("%s %d %s[%s%s%s] %q %v %d\n", color, code, Reset, color, r.Method, Reset, r.URL, time.Since(t1), lw.Size())
+		return func(w http.ResponseWriter, r *http.Request) {
+
+			t1 := time.Now()
+
+			lw := lrpool.Get().(*logWriter)
+			lw.status = 200
+			lw.size = 0
+			lw.committed = false
+			lw.ResponseWriter = w
+
+			defer func() {
+				if err := recover(); err != nil {
+					trace := make([]byte, 1<<16)
+					n := runtime.Stack(trace, true)
+					log.Printf(" %srecovering from panic: %+v\nStack Trace:\n %s%s", Red, err, trace[:n], Reset)
+					HandlePanic(lw, r, trace[:n])
+				}
+
+				lrpool.Put(lw)
+			}()
+
+			next(lw, r)
+
+			log.Printf("%d [%s] %q %v %d\n", lw.Status(), r.Method, r.URL, time.Since(t1), lw.Size())
+		}
+
 	}
 }
 
