@@ -48,33 +48,11 @@ func (g *routeGroup) handle(method string, path string, handler http.HandlerFunc
 		h = g.middleware[i](h)
 	}
 
-	var tree *node
+	tree := g.pure.trees[method]
 
-	switch method {
-	case http.MethodGet:
-		tree = g.pure.get
-	case http.MethodPost:
-		tree = g.pure.post
-	case http.MethodHead:
-		tree = g.pure.head
-	case http.MethodPut:
-		tree = g.pure.put
-	case http.MethodDelete:
-		tree = g.pure.del
-	case http.MethodConnect:
-		tree = g.pure.connect
-	case http.MethodOptions:
-		tree = g.pure.options
-	case http.MethodPatch:
-		tree = g.pure.patch
-	case http.MethodTrace:
-		tree = g.pure.trace
-	default:
-		tree = g.pure.custom[method]
-		if tree == nil {
-			tree = new(node)
-			g.pure.custom[method] = tree
-		}
+	if tree == nil {
+		tree = new(node)
+		g.pure.trees[method] = tree
 	}
 
 	pCount := tree.add(g.prefix+path, h)

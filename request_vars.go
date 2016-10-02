@@ -1,6 +1,7 @@
 package pure
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 )
@@ -14,6 +15,7 @@ type ReqVars interface {
 
 type requestVars struct {
 	r           *http.Request
+	ctx         context.Context // holds a copy of it's parent requestVars
 	params      Params
 	queryParams url.Values
 	formParsed  bool

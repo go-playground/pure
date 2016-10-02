@@ -27,16 +27,7 @@ var (
 // Mux is the main request multiplexer
 type Mux struct {
 	routeGroup
-	get     *node
-	post    *node
-	del     *node
-	put     *node
-	head    *node
-	connect *node
-	options *node
-	trace   *node
-	patch   *node
-	custom  map[string]*node
+	trees map[string]*node
 
 	// pool is used for reusable request scoped RequestVars content
 	pool sync.Pool
@@ -118,16 +109,7 @@ func New() *Mux {
 		routeGroup: routeGroup{
 			middleware: make([]Middleware, 0),
 		},
-		get:                        new(node),
-		post:                       new(node),
-		del:                        new(node),
-		put:                        new(node),
-		head:                       new(node),
-		connect:                    new(node),
-		options:                    new(node),
-		trace:                      new(node),
-		patch:                      new(node),
-		custom:                     make(map[string]*node),
+		trees:                      make(map[string]*node),
 		mostParams:                 0,
 		http404:                    default404Handler,
 		http405:                    methodNotAllowedHandler,
@@ -140,9 +122,13 @@ func New() *Mux {
 	p.routeGroup.pure = p
 	p.pool.New = func() interface{} {
 
-		return &requestVars{
+		rv := &requestVars{
 			params: make(Params, p.mostParams),
 		}
+
+		rv.ctx = context.WithValue(context.Background(), defaultContextIdentifier, rv)
+
+		return rv
 	}
 
 	return p
@@ -212,49 +198,36 @@ func (p *Mux) Serve() http.Handler {
 // Conforms to the http.Handler interface.
 func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
-	var tree *node
-
-	switch r.Method {
-	case http.MethodGet:
-		tree = p.get
-	case http.MethodPost:
-		tree = p.post
-	case http.MethodHead:
-		tree = p.head
-	case http.MethodPut:
-		tree = p.put
-	case http.MethodDelete:
-		tree = p.del
-	case http.MethodConnect:
-		tree = p.connect
-	case http.MethodOptions:
-		tree = p.options
-	case http.MethodPatch:
-		tree = p.patch
-	case http.MethodTrace:
-		tree = p.trace
-	default:
-		tree = p.custom[r.Method]
-	}
+	tree := p.trees[r.Method]
 
 	var h http.HandlerFunc
 	rv := p.pool.Get().(*requestVars)
 	rv.r = r
 
-	if tree == nil {
-		h = p.http404
-		goto END
-	}
+	if tree != nil {
+		if h, rv.params = tree.find(r.URL.Path, rv.params[0:0]); h == nil {
 
-	if h, rv.params = tree.find(r.URL.Path, rv.params[0:0]); h == nil {
+			if p.redirectTrailingSlash && len(r.URL.Path) > 1 {
 
-		if p.redirectTrailingSlash && len(r.URL.Path) > 1 {
+				// find again all lowercase
+				orig := r.URL.Path
+				lc := strings.ToLower(orig)
 
-			// find again all lowercase
-			orig := r.URL.Path
-			lc := strings.ToLower(orig)
+				if lc != r.URL.Path {
 
-			if lc != r.URL.Path {
+					if h, _ = tree.find(lc, rv.params[0:0]); h != nil {
+						r.URL.Path = lc
+						h = p.redirect(r.Method, r.URL.String())
+						r.URL.Path = orig
+						goto END
+					}
+				}
+
+				if lc[len(lc)-1:] == basePath {
+					lc = lc[:len(lc)-1]
+				} else {
+					lc = lc + basePath
+				}
 
 				if h, _ = tree.find(lc, rv.params[0:0]); h != nil {
 					r.URL.Path = lc
@@ -264,128 +237,31 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			if lc[len(lc)-1:] == basePath {
-				lc = lc[:len(lc)-1]
-			} else {
-				lc = lc + basePath
-			}
-
-			if h, _ = tree.find(lc, rv.params[0:0]); h != nil {
-				r.URL.Path = lc
-				h = p.redirect(r.Method, r.URL.String())
-				r.URL.Path = orig
-				goto END
-			}
+		} else {
+			goto END
 		}
-
-	} else {
-		goto END
 	}
-	// }
 
 	if p.automaticallyHandleOPTIONS && r.Method == http.MethodOptions {
 
 		if r.URL.Path == "*" { // check server-wide OPTIONS
 
-			if len(p.get.path) > 0 {
-				w.Header().Add(Allow, http.MethodGet)
-			}
+			for m := range p.trees {
 
-			if len(p.post.path) > 0 {
-				w.Header().Add(Allow, http.MethodPost)
-			}
+				if m == http.MethodOptions {
+					continue
+				}
 
-			if len(p.head.path) > 0 {
-				w.Header().Add(Allow, http.MethodPut)
-			}
-
-			if len(p.put.path) > 0 {
-				w.Header().Add(Allow, http.MethodPut)
-			}
-
-			if len(p.del.path) > 0 {
-				w.Header().Add(Allow, http.MethodDelete)
-			}
-
-			if len(p.connect.path) > 0 {
-				w.Header().Add(Allow, http.MethodConnect)
-			}
-
-			// if len(p.options.path) > 0 {
-			// 	w.Header().Add(Allow, http.MethodOptions)
-			// }
-
-			if len(p.patch.path) > 0 {
-				w.Header().Add(Allow, http.MethodPatch)
-			}
-
-			if len(p.trace.path) > 0 {
-				w.Header().Add(Allow, http.MethodTrace)
-			}
-
-			for m := range p.custom {
 				w.Header().Add(Allow, m)
 			}
 
 		} else {
 
-			if len(p.get.path) > 0 && r.Method != http.MethodGet {
-				if h, _ = p.get.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodGet)
+			for m, ctree := range p.trees {
+
+				if m == r.Method || m == http.MethodOptions {
+					continue
 				}
-			}
-
-			if len(p.post.path) > 0 && r.Method != http.MethodPost {
-				if h, _ = p.post.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodPost)
-				}
-			}
-
-			if len(p.head.path) > 0 && r.Method != http.MethodHead {
-				if h, _ = p.head.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodHead)
-				}
-			}
-
-			if len(p.put.path) > 0 && r.Method != http.MethodPut {
-				if h, _ = p.put.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodPut)
-				}
-			}
-
-			if len(p.del.path) > 0 && r.Method != http.MethodDelete {
-				if h, _ = p.del.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodDelete)
-				}
-			}
-
-			if len(p.connect.path) > 0 && r.Method != http.MethodConnect {
-				if h, _ = p.connect.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodConnect)
-				}
-			}
-
-			// options is a given, added below
-			// if len(p.options.path) > 0 && r.Method != http.MethodOptions {
-			// 	if h, _ = p.options.find(r.URL.Path, rv.params[0:0]); h != nil {
-			// 		w.Header().Add(Allow, http.MethodOptions)
-			// 	}
-			// }
-
-			if len(p.patch.path) > 0 && r.Method != http.MethodPatch {
-				if h, _ = p.patch.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodPatch)
-				}
-			}
-
-			if len(p.trace.path) > 0 && r.Method != http.MethodTrace {
-				if h, _ = p.trace.find(r.URL.Path, rv.params[0:0]); h != nil {
-					w.Header().Add(Allow, http.MethodTrace)
-				}
-			}
-
-			for m, ctree := range p.custom {
-
 				if h, _ = ctree.find(r.URL.Path, rv.params[0:0]); h != nil {
 					w.Header().Add(Allow, m)
 				}
@@ -402,71 +278,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 		var found bool
 
-		if len(p.get.path) > 0 && r.Method != http.MethodGet {
-			if h, _ = p.get.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodGet)
-				found = true
-			}
-		}
-
-		if len(p.post.path) > 0 && r.Method != http.MethodPost {
-			if h, _ = p.post.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodPost)
-				found = true
-			}
-		}
-
-		if len(p.head.path) > 0 && r.Method != http.MethodHead {
-			if h, _ = p.head.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodHead)
-				found = true
-			}
-		}
-
-		if len(p.put.path) > 0 && r.Method != http.MethodPut {
-			if h, _ = p.put.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodPut)
-				found = true
-			}
-		}
-
-		if len(p.del.path) > 0 && r.Method != http.MethodDelete {
-			if h, _ = p.del.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodDelete)
-				found = true
-			}
-		}
-
-		if len(p.connect.path) > 0 && r.Method != http.MethodConnect {
-			if h, _ = p.connect.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodConnect)
-				found = true
-			}
-		}
-
-		if len(p.options.path) > 0 && r.Method != http.MethodOptions {
-			if h, _ = p.options.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodOptions)
-				found = true
-			}
-
-		}
-
-		if len(p.patch.path) > 0 && r.Method != http.MethodPatch {
-			if h, _ = p.patch.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodPatch)
-				found = true
-			}
-		}
-
-		if len(p.trace.path) > 0 && r.Method != http.MethodTrace {
-			if h, _ = p.trace.find(r.URL.Path, rv.params[0:0]); h != nil {
-				w.Header().Add(Allow, http.MethodTrace)
-				found = true
-			}
-		}
-
-		for m, ctree := range p.custom {
+		for m, ctree := range p.trees {
 
 			if m == r.Method {
 				continue
@@ -493,8 +305,8 @@ END:
 
 		rv.formParsed = false
 
-		// create requestVars and store on context
-		r = r.WithContext(context.WithValue(r.Context(), defaultContextIdentifier, rv))
+		// store on context
+		r = r.WithContext(rv.ctx)
 	}
 
 	h(w, r)
