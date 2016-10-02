@@ -420,6 +420,7 @@ func TestAutomaticallyHandleOPTIONS(t *testing.T) {
 	p.Patch("/home", defaultHandler)
 	p.Trace("/home", defaultHandler)
 	p.Handle("PROPFIND", "/home", defaultHandler)
+	p.Options("/options", defaultHandler)
 
 	code, _ := request(http.MethodGet, "/home", p)
 	Equal(t, code, http.StatusOK)
