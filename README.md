@@ -1,6 +1,6 @@
 ##Pure
 <img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">
-![Project status](https://img.shields.io/badge/version-2.3.0-green.svg)
+![Project status](https://img.shields.io/badge/version-2.4.0-green.svg)
 [![Build Status](https://semaphoreci.com/api/v1/joeybloggs/pure/branches/master/badge.svg)](https://semaphoreci.com/joeybloggs/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -25,8 +25,8 @@ Installation
 
 Use go get 
 
-```go
-go get github.com/go-playground/pure
+```shell
+go get -u github.com/go-playground/pure
 ```
 
 Usage
@@ -155,33 +155,33 @@ the slowdown is with the use of the `context` package, as you can see when no pa
 ```go
 go test -bench=. -benchmem=true
 #GithubAPI Routes: 203
-   Pure: 37816 Bytes
+   Pure: 37560 Bytes
 
 #GPlusAPI Routes: 13
-   Pure: 3144 Bytes
+   Pure: 2808 Bytes
 
 #ParseAPI Routes: 26
-   Pure: 5328 Bytes
+   Pure: 5072 Bytes
 
 #Static Routes: 157
-   Pure: 21720 Bytes
+   Pure: 21224 Bytes
 
-BenchmarkPure_Param        	10000000	       210 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_Param5       	 5000000	       252 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_Param20      	 5000000	       384 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_ParamWrite   	 5000000	       266 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_GithubStatic 	20000000	        70.5 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GithubParam  	 5000000	       289 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_GithubAll    	   30000	     51338 ns/op	   48098 B/op	     334 allocs/op
-BenchmarkPure_GPlusStatic  	30000000	        53.5 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GPlusParam   	10000000	       236 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_GPlus2Params 	 5000000	       252 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_GPlusAll     	  500000	      2842 ns/op	    3168 B/op	      22 allocs/op
-BenchmarkPure_ParseStatic  	30000000	        53.1 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_ParseParam   	10000000	       209 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_Parse2Params 	10000000	       222 ns/op	     288 B/op	       2 allocs/op
-BenchmarkPure_ParseAll     	  300000	      4355 ns/op	    4608 B/op	      32 allocs/op
-BenchmarkPure_StaticAll    	  100000	     15090 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_Param        	10000000	       157 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Param5       	10000000	       208 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Param20      	 5000000	       350 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_ParamWrite   	10000000	       221 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GithubStatic 	20000000	        72.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_GithubParam  	10000000	       230 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GithubAll    	   30000	     43054 ns/op	   40082 B/op	     167 allocs/op
+BenchmarkPure_GPlusStatic  	30000000	        54.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_GPlusParam   	10000000	       182 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GPlus2Params 	10000000	       207 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GPlusAll     	 1000000	      2297 ns/op	    2640 B/op	      11 allocs/op
+BenchmarkPure_ParseStatic  	30000000	        56.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_ParseParam   	10000000	       166 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Parse2Params 	10000000	       180 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_ParseAll     	  500000	      3671 ns/op	    3840 B/op	      16 allocs/op
+BenchmarkPure_StaticAll    	  100000	     14646 ns/op	       0 B/op	       0 allocs/op
 ```
 
 Package Versioning
