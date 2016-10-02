@@ -140,9 +140,13 @@ func New() *Mux {
 	p.routeGroup.pure = p
 	p.pool.New = func() interface{} {
 
-		return &requestVars{
+		rv := &requestVars{
 			params: make(Params, p.mostParams),
 		}
+
+		rv.ctx = context.WithValue(context.Background(), defaultContextIdentifier, rv)
+
+		return rv
 	}
 
 	return p
@@ -281,7 +285,6 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		goto END
 	}
-	// }
 
 	if p.automaticallyHandleOPTIONS && r.Method == http.MethodOptions {
 
@@ -493,8 +496,8 @@ END:
 
 		rv.formParsed = false
 
-		// create requestVars and store on context
-		r = r.WithContext(context.WithValue(r.Context(), defaultContextIdentifier, rv))
+		// store on context
+		r = r.WithContext(rv.ctx)
 	}
 
 	h(w, r)
