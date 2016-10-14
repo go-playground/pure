@@ -14,16 +14,10 @@ import (
 type nodeType uint8
 
 const (
-	// isStatic nodeType = iota // default
 	isRoot nodeType = iota + 1
 	hasParams
 	matchesAny
 )
-
-// type methodChain struct {
-// 	handlerName string
-// 	handler     http.HandlerFunc
-// }
 
 type existingParams map[string]struct{}
 

@@ -7,42 +7,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-playground/ansi"
 	"github.com/go-playground/pure"
 )
 
-// ANSIEscSeq is a predefined ANSI escape sequence
-type ANSIEscSeq string
-
-// ANSI escape sequences
-// NOTE: in an standard xterm terminal the light colors will appear BOLD instead of the light variant
 const (
-	Black        ANSIEscSeq = "\x1b[30m"
-	DarkGray                = "\x1b[30;1m"
-	Blue                    = "\x1b[34m"
-	LightBlue               = "\x1b[34;1m"
-	Green                   = "\x1b[32m"
-	LightGreen              = "\x1b[32;1m"
-	Cyan                    = "\x1b[36m"
-	LightCyan               = "\x1b[36;1m"
-	Red                     = "\x1b[31m"
-	LightRed                = "\x1b[31;1m"
-	Magenta                 = "\x1b[35m"
-	LightMagenta            = "\x1b[35;1m"
-	Brown                   = "\x1b[33m"
-	Yellow                  = "\x1b[33;1m"
-	LightGray               = "\x1b[37m"
-	White                   = "\x1b[37;1m"
-	Underscore              = "\x1b[4m"
-	Blink                   = "\x1b[5m"
-	Inverse                 = "\x1b[7m"
-	Reset                   = "\x1b[0m"
-)
-
-const (
-	status500 = Underscore + Blink + Red
-	status400 = Red
-	status300 = Yellow
-	status    = Green
+	status500 = ansi.Underline + ansi.Blink + ansi.Red
+	status400 = ansi.Red
+	status300 = ansi.Yellow
+	status    = ansi.Green
 )
 
 type logWriter struct {
@@ -118,7 +91,7 @@ func LoggingAndRecovery(color bool) pure.Middleware {
 					if err := recover(); err != nil {
 						trace := make([]byte, 1<<16)
 						n := runtime.Stack(trace, true)
-						log.Printf(" %srecovering from panic: %+v\nStack Trace:\n %s%s", Red, err, trace[:n], Reset)
+						log.Printf(" %srecovering from panic: %+v\nStack Trace:\n %s%s", ansi.Red, err, trace[:n], ansi.Reset)
 						HandlePanic(lw, r, trace[:n])
 
 						lrpool.Put(lw)
@@ -146,7 +119,7 @@ func LoggingAndRecovery(color bool) pure.Middleware {
 					color = status
 				}
 
-				log.Printf("%s %d %s[%s%s%s] %q %v %d\n", color, code, Reset, color, r.Method, Reset, r.URL, time.Since(t1), lw.Size())
+				log.Printf("%s %d %s[%s%s%s] %q %v %d\n", color, code, ansi.Reset, color, r.Method, ansi.Reset, r.URL, time.Since(t1), lw.Size())
 			}
 		}
 
@@ -164,7 +137,7 @@ func LoggingAndRecovery(color bool) pure.Middleware {
 				if err := recover(); err != nil {
 					trace := make([]byte, 1<<16)
 					n := runtime.Stack(trace, true)
-					log.Printf(" %srecovering from panic: %+v\nStack Trace:\n %s%s", Red, err, trace[:n], Reset)
+					log.Printf(" %srecovering from panic: %+v\nStack Trace:\n %s%s", ansi.Red, err, trace[:n], ansi.Reset)
 					HandlePanic(lw, r, trace[:n])
 				}
 
