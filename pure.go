@@ -29,8 +29,8 @@ type Mux struct {
 	routeGroup
 	trees map[string]*node
 
-	// // pool is used for reusable request scoped RequestVars content
-	// pool sync.Pool
+	// pool is used for reusable request scoped RequestVars content
+	pool sync.Pool
 
 	// mostParams used to keep track of the most amount of
 	// params in any URL and this will set the default capacity
@@ -120,16 +120,16 @@ func New() *Mux {
 	}
 
 	p.routeGroup.pure = p
-	// p.pool.New = func() interface{} {
+	p.pool.New = func() interface{} {
 
-	// 	rv := &requestVars{
-	// 		params: make(Params, p.mostParams),
-	// 	}
+		rv := &requestVars{
+			params: make(Params, p.mostParams),
+		}
 
-	// 	rv.ctx = context.WithValue(context.Background(), defaultContextIdentifier, rv)
+		rv.ctx = context.WithValue(context.Background(), defaultContextIdentifier, rv)
 
-	// 	return rv
-	// }
+		return rv
+	}
 
 	return p
 }
@@ -201,14 +201,10 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	tree := p.trees[r.Method]
 
 	var h http.HandlerFunc
-	var params Params
-	// params := make(Params, p.mostParams)
-
-	// rv := p.pool.Get().(*requestVars)
-	// rv.r = r
+	var rv *requestVars
 
 	if tree != nil {
-		if h, params = tree.find(r.URL.Path, p.mostParams); h == nil {
+		if h, rv = tree.find(r.URL.Path, p); h == nil {
 
 			if p.redirectTrailingSlash && len(r.URL.Path) > 1 {
 
@@ -218,7 +214,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 				if lc != r.URL.Path {
 
-					if h, _ = tree.find(lc, p.mostParams); h != nil {
+					if h, _ = tree.find(lc, p); h != nil {
 						r.URL.Path = lc
 						h = p.redirect(r.Method, r.URL.String())
 						r.URL.Path = orig
@@ -232,7 +228,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 					lc = lc + basePath
 				}
 
-				if h, _ = tree.find(lc, p.mostParams); h != nil {
+				if h, _ = tree.find(lc, p); h != nil {
 					r.URL.Path = lc
 					h = p.redirect(r.Method, r.URL.String())
 					r.URL.Path = orig
@@ -265,7 +261,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				if m == r.Method || m == http.MethodOptions {
 					continue
 				}
-				if h, _ = ctree.find(r.URL.Path, p.mostParams); h != nil {
+				if h, _ = ctree.find(r.URL.Path, p); h != nil {
 					w.Header().Add(Allow, m)
 				}
 			}
@@ -287,7 +283,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			if h, _ = ctree.find(r.URL.Path, p.mostParams); h != nil {
+			if h, _ = ctree.find(r.URL.Path, p); h != nil {
 				w.Header().Add(Allow, m)
 				found = true
 			}
@@ -304,16 +300,10 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 END:
 
-	if len(params) > 0 {
+	if rv != nil {
 
-		// rv.formParsed = false
-
-		rv := &requestVars{
-			r:      r,
-			params: params,
-		}
-
-		rv.ctx = context.WithValue(context.Background(), defaultContextIdentifier, rv)
+		rv.formParsed = false
+		rv.r = r
 
 		// store on context
 		r = r.WithContext(rv.ctx)
@@ -321,9 +311,11 @@ END:
 
 	h(w, r)
 
-	// rv.queryParams = nil
-	// rv.r = nil
-	// p.pool.Put(rv)
+	if rv != nil {
+		rv.queryParams = nil
+		rv.r = nil
+		p.pool.Put(rv)
+	}
 }
 
 func (p *Mux) redirect(method string, to string) (h http.HandlerFunc) {
