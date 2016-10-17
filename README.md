@@ -1,6 +1,6 @@
 ##Pure
 <img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">
-![Project status](https://img.shields.io/badge/version-2.5.0-green.svg)
+![Project status](https://img.shields.io/badge/version-2.6.0-green.svg)
 [![Build Status](https://semaphoreci.com/api/v1/joeybloggs/pure/branches/master/badge.svg)](https://semaphoreci.com/joeybloggs/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -166,22 +166,22 @@ go test -bench=. -benchmem=true
 #Static Routes: 157
    Pure: 21224 Bytes
 
-BenchmarkPure_Param        	10000000	       157 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_Param5       	10000000	       208 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_Param20      	 5000000	       350 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_ParamWrite   	10000000	       221 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GithubStatic 	20000000	        72.6 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GithubParam  	10000000	       230 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GithubAll    	   30000	     43054 ns/op	   40082 B/op	     167 allocs/op
-BenchmarkPure_GPlusStatic  	30000000	        54.0 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GPlusParam   	10000000	       182 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GPlus2Params 	10000000	       207 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GPlusAll     	 1000000	      2297 ns/op	    2640 B/op	      11 allocs/op
-BenchmarkPure_ParseStatic  	30000000	        56.2 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_ParseParam   	10000000	       166 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_Parse2Params 	10000000	       180 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_ParseAll     	  500000	      3671 ns/op	    3840 B/op	      16 allocs/op
-BenchmarkPure_StaticAll    	  100000	     14646 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_Param        	10000000	       161 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Param5       	10000000	       205 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Param20      	 5000000	       356 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_ParamWrite   	10000000	       215 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GithubStatic 	30000000	        47.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_GithubParam  	10000000	       227 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GithubAll    	   30000	     42284 ns/op	   40082 B/op	     167 allocs/op
+BenchmarkPure_GPlusStatic  	50000000	        31.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_GPlusParam   	10000000	       178 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GPlus2Params 	10000000	       193 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GPlusAll     	 1000000	      2159 ns/op	    2640 B/op	      11 allocs/op
+BenchmarkPure_ParseStatic  	50000000	        30.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_ParseParam   	10000000	       159 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Parse2Params 	10000000	       174 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_ParseAll     	  500000	      3290 ns/op	    3840 B/op	      16 allocs/op
+BenchmarkPure_StaticAll    	  200000	      9964 ns/op	       0 B/op	       0 allocs/op
 ```
 
 Package Versioning
