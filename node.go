@@ -314,9 +314,7 @@ func (n *node) insertChild(numParams uint8, existing existingParams, path string
 }
 
 // Returns the handle registered with the given path (key).
-func (n *node) find(path string, po Params) (handler http.HandlerFunc, p Params) {
-
-	p = po
+func (n *node) find(path string, mux *Mux) (handler http.HandlerFunc, rv *requestVars) {
 
 walk: // Outer loop for walking the tree
 	for {
@@ -351,11 +349,16 @@ walk: // Outer loop for walking the tree
 						end++
 					}
 
+					if rv == nil {
+						rv = mux.pool.Get().(*requestVars)
+						rv.params = rv.params[0:0]
+					}
+
 					// save param value
-					i := len(p)
-					p = p[:i+1] // expand slice within preallocated capacity
-					p[i].Key = n.path[1:]
-					p[i].Value = path[:end]
+					i := len(rv.params)
+					rv.params = rv.params[:i+1] // expand slice within preallocated capacity
+					rv.params[i].Key = n.path[1:]
+					rv.params[i].Value = path[:end]
 
 					// we need to go deeper!
 					if end < len(path) {
@@ -380,11 +383,16 @@ walk: // Outer loop for walking the tree
 
 				case matchesAny:
 
+					if rv == nil {
+						rv = mux.pool.Get().(*requestVars)
+						rv.params = rv.params[0:0]
+					}
+
 					// save param value
-					i := len(p)
-					p = p[:i+1] // expand slice within preallocated capacity
-					p[i].Key = WildcardParam
-					p[i].Value = path[1:]
+					i := len(rv.params)
+					rv.params = rv.params[:i+1] // expand slice within preallocated capacity
+					rv.params[i].Key = WildcardParam
+					rv.params[i].Value = path[1:]
 
 					handler = n.handler
 					return

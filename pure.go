@@ -201,11 +201,10 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	tree := p.trees[r.Method]
 
 	var h http.HandlerFunc
-	rv := p.pool.Get().(*requestVars)
-	rv.r = r
+	var rv *requestVars
 
 	if tree != nil {
-		if h, rv.params = tree.find(r.URL.Path, rv.params[0:0]); h == nil {
+		if h, rv = tree.find(r.URL.Path, p); h == nil {
 
 			if p.redirectTrailingSlash && len(r.URL.Path) > 1 {
 
@@ -215,7 +214,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 				if lc != r.URL.Path {
 
-					if h, _ = tree.find(lc, rv.params[0:0]); h != nil {
+					if h, _ = tree.find(lc, p); h != nil {
 						r.URL.Path = lc
 						h = p.redirect(r.Method, r.URL.String())
 						r.URL.Path = orig
@@ -229,7 +228,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 					lc = lc + basePath
 				}
 
-				if h, _ = tree.find(lc, rv.params[0:0]); h != nil {
+				if h, _ = tree.find(lc, p); h != nil {
 					r.URL.Path = lc
 					h = p.redirect(r.Method, r.URL.String())
 					r.URL.Path = orig
@@ -262,7 +261,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				if m == r.Method || m == http.MethodOptions {
 					continue
 				}
-				if h, _ = ctree.find(r.URL.Path, rv.params[0:0]); h != nil {
+				if h, _ = ctree.find(r.URL.Path, p); h != nil {
 					w.Header().Add(Allow, m)
 				}
 			}
@@ -284,7 +283,7 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			if h, _ = ctree.find(r.URL.Path, rv.params[0:0]); h != nil {
+			if h, _ = ctree.find(r.URL.Path, p); h != nil {
 				w.Header().Add(Allow, m)
 				found = true
 			}
@@ -301,9 +300,10 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 
 END:
 
-	if len(rv.params) > 0 {
+	if rv != nil {
 
 		rv.formParsed = false
+		rv.r = r
 
 		// store on context
 		r = r.WithContext(rv.ctx)
@@ -311,9 +311,11 @@ END:
 
 	h(w, r)
 
-	rv.queryParams = nil
-	rv.r = nil
-	p.pool.Put(rv)
+	if rv != nil {
+		rv.queryParams = nil
+		rv.r = nil
+		p.pool.Put(rv)
+	}
 }
 
 func (p *Mux) redirect(method string, to string) (h http.HandlerFunc) {
