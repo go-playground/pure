@@ -70,7 +70,6 @@ func Gzip(next http.HandlerFunc) http.HandlerFunc {
 			w = gz
 			defer func() {
 
-				// fmt.Println(gz.sniffComplete)
 				if !gz.sniffComplete {
 					// We have to reset response to it's pristine state when
 					// nothing is written to body.
@@ -124,7 +123,6 @@ func GzipLevel(level int) pure.Middleware {
 				w = gz
 				defer func() {
 
-					// fmt.Println(gz.sniffComplete)
 					if !gz.sniffComplete {
 						// We have to reset response to it's pristine state when
 						// nothing is written to body.
