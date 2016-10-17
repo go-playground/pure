@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/go-playground/pure"
-	mw "github.com/go-playground/pure/examples/middleware/logging-recovery"
 )
 
 func main() {
 
 	p := pure.New()
-	p.Use(mw.LoggingAndRecovery(true))
+	// p.Use(mw.LoggingAndRecovery(true))
 
 	p.Get("/", helloWorld)
 

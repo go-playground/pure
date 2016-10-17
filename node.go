@@ -314,9 +314,9 @@ func (n *node) insertChild(numParams uint8, existing existingParams, path string
 }
 
 // Returns the handle registered with the given path (key).
-func (n *node) find(path string, po Params) (handler http.HandlerFunc, p Params) {
+func (n *node) find(path string, mostParams uint8) (handler http.HandlerFunc, p Params) {
 
-	p = po
+	// p = po
 
 walk: // Outer loop for walking the tree
 	for {
@@ -353,6 +353,9 @@ walk: // Outer loop for walking the tree
 
 					// save param value
 					i := len(p)
+					if i == 0 {
+						p = make(Params, mostParams)
+					}
 					p = p[:i+1] // expand slice within preallocated capacity
 					p[i].Key = n.path[1:]
 					p[i].Value = path[:end]
@@ -382,6 +385,9 @@ walk: // Outer loop for walking the tree
 
 					// save param value
 					i := len(p)
+					if i == 0 {
+						p = make(Params, mostParams)
+					}
 					p = p[:i+1] // expand slice within preallocated capacity
 					p[i].Key = WildcardParam
 					p[i].Value = path[1:]
