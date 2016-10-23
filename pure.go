@@ -303,7 +303,6 @@ END:
 	if rv != nil {
 
 		rv.formParsed = false
-		rv.r = r
 
 		// store on context
 		r = r.WithContext(rv.ctx)
@@ -312,8 +311,6 @@ END:
 	h(w, r)
 
 	if rv != nil {
-		rv.queryParams = nil
-		rv.r = nil
 		p.pool.Put(rv)
 	}
 }

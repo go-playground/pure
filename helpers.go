@@ -15,7 +15,7 @@ func RequestVars(r *http.Request) ReqVars {
 
 	rv := r.Context().Value(defaultContextIdentifier)
 	if rv == nil {
-		return &requestVars{r: r}
+		return new(requestVars)
 	}
 
 	return rv.(*requestVars)

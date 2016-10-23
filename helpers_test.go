@@ -45,30 +45,6 @@ func TestNoRequestVars(t *testing.T) {
 	Equal(t, code, http.StatusOK)
 }
 
-func TestQueryParams(t *testing.T) {
-
-	qp1 := func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			rv := RequestVars(r)
-			w.Write([]byte(rv.QueryParams().Get("test")))
-			next(w, r)
-		}
-	}
-
-	qp2 := func(w http.ResponseWriter, r *http.Request) {
-		rv := RequestVars(r)
-		w.Write([]byte(rv.QueryParams().Get("test")))
-	}
-
-	p := New()
-	p.Use(qp1)
-	p.Get("/home/:test", qp2)
-
-	code, body := request(http.MethodGet, "/home/testval?test=val", p)
-	Equal(t, code, http.StatusOK)
-	Equal(t, body, "valval")
-}
-
 func TestDecode(t *testing.T) {
 
 	type TestStruct struct {
