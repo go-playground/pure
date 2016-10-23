@@ -248,11 +248,11 @@ func ParseMultipartForm(r *http.Request, maxMemory int64) error {
 // Example if header was "application/json" would decode using
 // json.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v).
 //
-// NOTE: when includeFormQueryParams=true both query params and SEO query params will be parsed and
+// NOTE: when includeQueryParams=true both query params and SEO query params will be parsed and
 // included eg. route /user/:id?test=true both 'id' and 'test' are treated as query params and added
-// to the request.Form prior to decoding; in short SEO query params are treated just like normal
-// query params.
-func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v interface{}) (err error) {
+// to the request.Form prior to decoding or added to parsed JSON or XML; in short SEO query params are
+// treated just like normal query params.
+func Decode(r *http.Request, includeQueryParams bool, maxMemory int64, v interface{}) (err error) {
 
 	typ := r.Header.Get(ContentType)
 
@@ -263,14 +263,24 @@ func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v int
 	switch typ {
 
 	case ApplicationJSON:
+
 		err = json.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v)
 
+		if includeQueryParams && err == nil {
+			err = DecodeQueryParams(r, includeQueryParams, v)
+		}
+
 	case ApplicationXML:
+
 		err = xml.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v)
+
+		if includeQueryParams && err == nil {
+			err = DecodeQueryParams(r, includeQueryParams, v)
+		}
 
 	case ApplicationForm:
 
-		if includeFormQueryParams {
+		if includeQueryParams {
 
 			if err = ParseForm(r); err == nil {
 				err = DefaultDecoder.Decode(v, r.Form)
@@ -284,7 +294,7 @@ func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v int
 
 	case MultipartForm:
 
-		if includeFormQueryParams {
+		if includeQueryParams {
 
 			if err = ParseMultipartForm(r, maxMemory); err == nil {
 				err = DefaultDecoder.Decode(v, r.Form)
@@ -297,9 +307,23 @@ func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v int
 		}
 
 	case ApplicationQueryParams:
+		if includeQueryParams {
+			err = DecodeQueryParams(r, includeQueryParams, v)
+		}
+	}
+	return
+}
 
-		qp := r.URL.Query()
+// DecodeQueryParams takes the URL Query params, adds SEO params or not based on the includeSEOQueryParams
+// flag.
+//
+// NOTE: DecodeQueryParams is also used/called from Decode when no ContentType is specified
+// the only difference is that it will always pass true for includeSEOQueryParams
+func DecodeQueryParams(r *http.Request, includeSEOQueryParams bool, v interface{}) (err error) {
 
+	qp := r.URL.Query()
+
+	if includeSEOQueryParams {
 		if rvi := r.Context().Value(defaultContextIdentifier); rvi != nil {
 
 			rv := rvi.(*requestVars)
@@ -308,8 +332,8 @@ func Decode(r *http.Request, includeFormQueryParams bool, maxMemory int64, v int
 				qp.Add(p.Key, p.Value)
 			}
 		}
-
-		err = DefaultDecoder.Decode(v, qp)
 	}
+
+	err = DefaultDecoder.Decode(v, qp)
 	return
 }

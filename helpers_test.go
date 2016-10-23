@@ -80,6 +80,10 @@ func TestDecode(t *testing.T) {
 	test := new(TestStruct)
 
 	p := New()
+	p.Post("/decode-noquery/:id", func(w http.ResponseWriter, r *http.Request) {
+		err := Decode(r, false, 16<<10, test)
+		Equal(t, err, nil)
+	})
 	p.Post("/decode/:id", func(w http.ResponseWriter, r *http.Request) {
 		err := Decode(r, true, 16<<10, test)
 		Equal(t, err, nil)
@@ -227,6 +231,30 @@ func TestDecode(t *testing.T) {
 	Equal(t, test.Posted, "value")
 	Equal(t, test.MultiPartPosted, "value")
 
+	test = new(TestStruct)
+	r, _ = http.NewRequest(http.MethodPost, "/decode/13?id=14", strings.NewReader(jsonBody))
+	r.Header.Set(ContentType, ApplicationJSON)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 14)
+	Equal(t, test.Posted, "value")
+	Equal(t, test.MultiPartPosted, "value")
+
+	test = new(TestStruct)
+	r, _ = http.NewRequest(http.MethodPost, "/decode-noquery/13?id=14", strings.NewReader(jsonBody))
+	r.Header.Set(ContentType, ApplicationJSON)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 13)
+	Equal(t, test.Posted, "value")
+	Equal(t, test.MultiPartPosted, "value")
+
 	xmlBody := `<TestStruct><ID>13</ID><Posted>value</Posted><MultiPartPosted>value</MultiPartPosted></TestStruct>`
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/13", strings.NewReader(xmlBody))
@@ -239,6 +267,77 @@ func TestDecode(t *testing.T) {
 	Equal(t, test.ID, 13)
 	Equal(t, test.Posted, "value")
 	Equal(t, test.MultiPartPosted, "value")
+
+	test = new(TestStruct)
+	r, _ = http.NewRequest(http.MethodPost, "/decode/13?id=14", strings.NewReader(xmlBody))
+	r.Header.Set(ContentType, ApplicationXML)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 14)
+	Equal(t, test.Posted, "value")
+	Equal(t, test.MultiPartPosted, "value")
+
+	test = new(TestStruct)
+	r, _ = http.NewRequest(http.MethodPost, "/decode-noquery/13?id=14", strings.NewReader(xmlBody))
+	r.Header.Set(ContentType, ApplicationXML)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 13)
+	Equal(t, test.Posted, "value")
+	Equal(t, test.MultiPartPosted, "value")
+}
+
+func TestDecodeQueryParams(t *testing.T) {
+
+	type Test struct {
+		ID int `form:"id"`
+	}
+
+	test := new(Test)
+
+	p := New()
+	p.Post("/decode-noquery/:id", func(w http.ResponseWriter, r *http.Request) {
+		err := DecodeQueryParams(r, false, test)
+		Equal(t, err, nil)
+	})
+	p.Post("/decode/:id", func(w http.ResponseWriter, r *http.Request) {
+		err := DecodeQueryParams(r, true, test)
+		Equal(t, err, nil)
+	})
+
+	hf := p.Serve()
+
+	r, _ := http.NewRequest(http.MethodPost, "/decode/13?id=14", nil)
+	w := httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 14) // 14 because 13 was added to the array of 'id' query params
+
+	test = new(Test)
+	r, _ = http.NewRequest(http.MethodPost, "/decode/13?otheridval=14", nil)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 13)
+
+	test = new(Test)
+	r, _ = http.NewRequest(http.MethodPost, "/decode-noquery/13?id=14", nil)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 14)
 }
 
 func TestAcceptedLanguages(t *testing.T) {
