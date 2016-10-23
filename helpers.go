@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -320,8 +321,16 @@ func Decode(r *http.Request, includeQueryParams bool, maxMemory int64, v interfa
 // NOTE: DecodeQueryParams is also used/called from Decode when no ContentType is specified
 // the only difference is that it will always pass true for includeSEOQueryParams
 func DecodeQueryParams(r *http.Request, includeSEOQueryParams bool, v interface{}) (err error) {
+	err = DefaultDecoder.Decode(v, QueryParams(r, includeSEOQueryParams))
+	return
+}
 
-	qp := r.URL.Query()
+// QueryParams returns the r.URL.Query() values and optionally have them include the
+// SEO query params eg. route /users/:id?test=val if includeSEOQueryParams=true then
+// values will include 'id' and 'test' values
+func QueryParams(r *http.Request, includeSEOQueryParams bool) (values url.Values) {
+
+	values = r.URL.Query()
 
 	if includeSEOQueryParams {
 		if rvi := r.Context().Value(defaultContextIdentifier); rvi != nil {
@@ -329,11 +338,10 @@ func DecodeQueryParams(r *http.Request, includeSEOQueryParams bool, v interface{
 			rv := rvi.(*requestVars)
 
 			for _, p := range rv.params {
-				qp.Add(p.Key, p.Value)
+				values.Add(p.Key, p.Value)
 			}
 		}
 	}
 
-	err = DefaultDecoder.Decode(v, qp)
 	return
 }
