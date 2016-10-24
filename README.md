@@ -1,6 +1,6 @@
 ##Pure
 <img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">
-![Project status](https://img.shields.io/badge/version-3.0.0-green.svg)
+![Project status](https://img.shields.io/badge/version-3.0.1-green.svg)
 [![Build Status](https://semaphoreci.com/api/v1/joeybloggs/pure/branches/master/badge.svg)](https://semaphoreci.com/joeybloggs/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -76,10 +76,9 @@ l.Get("/user/:id", UserHandler)
 
 // extract params like so
 rv := pure.ReqestVars(r) // done this way so only have to extract from context once, read above
-params := rv.Params() or params := pure.ReqestVars(r).Params()
-params.Get(paramname)
+rv.URLParam(paramname)
 
-// serve css, js etc.. pure.RequestVars(r).Params().Get(pure.WildcardParam) will return the remaining path if 
+// serve css, js etc.. pure.RequestVars(r).URLParam(pure.WildcardParam) will return the remaining path if 
 // you need to use it in a custom handler...
 l.Get("/static/*", http.FileServer(http.Dir("static/"))) 
 
