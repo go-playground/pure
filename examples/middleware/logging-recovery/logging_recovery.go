@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"bufio"
 	"log"
+	"net"
 	"net/http"
 	"runtime"
 	"sync"
@@ -62,6 +64,16 @@ func (lw *logWriter) Status() int {
 // Size returns the number of bytes written in the response thus far
 func (lw *logWriter) Size() int64 {
 	return lw.size
+}
+
+// Hijack hijacks the current http connection
+func (lw *logWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return lw.ResponseWriter.(http.Hijacker).Hijack()
+}
+
+// CloseNotify ...
+func (lw *logWriter) CloseNotify() <-chan bool {
+	return lw.ResponseWriter.(http.CloseNotifier).CloseNotify()
 }
 
 var lrpool = sync.Pool{
