@@ -1,6 +1,6 @@
 ##Pure
 <img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">
-![Project status](https://img.shields.io/badge/version-3.0.1-green.svg)
+![Project status](https://img.shields.io/badge/version-3.1.0-green.svg)
 [![Build Status](https://semaphoreci.com/api/v1/joeybloggs/pure/branches/master/badge.svg)](https://semaphoreci.com/joeybloggs/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -116,7 +116,8 @@ admin.Use(SomeAdminSecurityMiddleware)
 
 Decoding Body
 -------------
-currently JSON, XML, FORM, Multipart Form and url.Values are support out of the box.
+currently JSON, XML, FORM, Multipart Form and url.Values are support out of the box; there are also 
+individual functions for each as well when you know the Content-Type.
 ```go
 	// second argument denotes yes or no I would like URL query parameter fields
 	// to be included. i.e. 'id' and 'id2' in route '/user/:id?id2=val' should it be included.
@@ -155,40 +156,40 @@ Other middleware will be listed under the examples/middleware/... folder for a q
 
 Benchmarks
 -----------
-Run on MacBook Pro (Retina, 15-inch, Late 2013) 2.6 GHz Intel Core i7 16 GB 1600 MHz DDR3 using Go version go1.7.3 darwin/amd64
+Run on MacBook Pro (Retina, 15-inch, Late 2013) 2.6 GHz Intel Core i7 16 GB 1600 MHz DDR3 using Go version go1.7.4 darwin/amd64
 
 NOTICE: pure uses a custom version of [httprouter](https://github.com/julienschmidt/httprouter)'s radix tree, benchmarks can be found [here](https://github.com/joeybloggs/go-http-routing-benchmark/tree/pure-and-lars) the slowdown is with the use of the `context` package, as you can see when no SEO params are defined, and therefore no need to store anything in the context, it is faster than even lars.
 
 ```go
 go test -bench=. -benchmem=true
 #GithubAPI Routes: 203
-   Pure: 37560 Bytes
+   Pure: 37544 Bytes
 
 #GPlusAPI Routes: 13
-   Pure: 2808 Bytes
+   Pure: 2792 Bytes
 
 #ParseAPI Routes: 26
-   Pure: 5072 Bytes
+   Pure: 5056 Bytes
 
 #Static Routes: 157
-   Pure: 21224 Bytes
+   Pure: 21208 Bytes
 
-BenchmarkPure_Param        	10000000	       156 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_Param5       	10000000	       199 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_Param20      	 5000000	       349 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_ParamWrite   	10000000	       209 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GithubStatic 	30000000	        45.4 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GithubParam  	10000000	       219 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GithubAll    	   30000	     40244 ns/op	   40082 B/op	     167 allocs/op
-BenchmarkPure_GPlusStatic  	50000000	        30.4 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GPlusParam   	10000000	       173 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GPlus2Params 	10000000	       190 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_GPlusAll     	 1000000	      2108 ns/op	    2640 B/op	      11 allocs/op
-BenchmarkPure_ParseStatic  	50000000	        29.9 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_ParseParam   	10000000	       154 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_Parse2Params 	10000000	       167 ns/op	     240 B/op	       1 allocs/op
-BenchmarkPure_ParseAll     	  500000	      3209 ns/op	    3840 B/op	      16 allocs/op
-BenchmarkPure_StaticAll    	  200000	      9881 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_Param        	10000000	       159 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Param5       	10000000	       207 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Param20      	 5000000	       353 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_ParamWrite   	10000000	       224 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GithubStatic 	30000000	        47.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_GithubParam  	10000000	       226 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GithubAll    	   30000	     41178 ns/op	   40082 B/op	     167 allocs/op
+BenchmarkPure_GPlusStatic  	50000000	        30.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_GPlusParam   	10000000	       172 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GPlus2Params 	10000000	       192 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_GPlusAll     	 1000000	      2127 ns/op	    2640 B/op	      11 allocs/op
+BenchmarkPure_ParseStatic  	50000000	        30.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPure_ParseParam   	10000000	       165 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_Parse2Params 	10000000	       177 ns/op	     240 B/op	       1 allocs/op
+BenchmarkPure_ParseAll     	  500000	      3298 ns/op	    3840 B/op	      16 allocs/op
+BenchmarkPure_StaticAll    	  200000	      9685 ns/op	       0 B/op	       0 allocs/op
 ```
 
 Package Versioning

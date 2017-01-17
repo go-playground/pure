@@ -32,14 +32,14 @@ type Mux struct {
 	// pool is used for reusable request scoped RequestVars content
 	pool sync.Pool
 
+	http404     http.HandlerFunc // 404 Not Found
+	http405     http.HandlerFunc // 405 Method Not Allowed
+	httpOPTIONS http.HandlerFunc
+
 	// mostParams used to keep track of the most amount of
 	// params in any URL and this will set the default capacity
 	// of each Params
 	mostParams uint8
-
-	http404     http.HandlerFunc // 404 Not Found
-	http405     http.HandlerFunc // 405 Method Not Allowed
-	httpOPTIONS http.HandlerFunc
 
 	// Enables automatic redirection if the current route can't be matched but a
 	// handler for the path with (without) the trailing slash exists.

@@ -264,54 +264,112 @@ func Decode(r *http.Request, includeQueryParams bool, maxMemory int64, v interfa
 	switch typ {
 
 	case ApplicationJSON:
-
-		err = json.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v)
-
-		if includeQueryParams && err == nil {
-			err = DecodeQueryParams(r, includeQueryParams, v)
-		}
+		err = DecodeJSON(r, includeQueryParams, maxMemory, v)
 
 	case ApplicationXML:
-
-		err = xml.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v)
-
-		if includeQueryParams && err == nil {
-			err = DecodeQueryParams(r, includeQueryParams, v)
-		}
+		err = DecodeXML(r, includeQueryParams, maxMemory, v)
 
 	case ApplicationForm:
-
-		if includeQueryParams {
-
-			if err = ParseForm(r); err == nil {
-				err = DefaultDecoder.Decode(v, r.Form)
-			}
-
-		} else {
-			if err = r.ParseForm(); err == nil {
-				err = DefaultDecoder.Decode(v, r.PostForm)
-			}
-		}
+		err = DecodeForm(r, includeQueryParams, v)
 
 	case MultipartForm:
-
-		if includeQueryParams {
-
-			if err = ParseMultipartForm(r, maxMemory); err == nil {
-				err = DefaultDecoder.Decode(v, r.Form)
-			}
-
-		} else {
-			if err = r.ParseMultipartForm(maxMemory); err == nil {
-				err = DefaultDecoder.Decode(v, r.MultipartForm.Value)
-			}
-		}
+		err = DecodeMultipartForm(r, includeQueryParams, maxMemory, v)
 
 	case ApplicationQueryParams:
+
 		if includeQueryParams {
 			err = DecodeQueryParams(r, includeQueryParams, v)
 		}
 	}
+
+	return
+}
+
+// DecodeForm parses the requests form data into the provided struct.
+//
+// The Content-Type and http method are not checked.
+//
+// NOTE: when includeQueryParams=true both query params and SEO query params will be parsed and
+// included eg. route /user/:id?test=true both 'id' and 'test' are treated as query params and added
+// to the request.Form prior to decoding; in short SEO query params are treated just like normal query params.
+func DecodeForm(r *http.Request, includeQueryParams bool, v interface{}) (err error) {
+
+	if includeQueryParams {
+
+		if err = ParseForm(r); err == nil {
+			err = DefaultDecoder.Decode(v, r.Form)
+		}
+
+		return
+	}
+
+	if err = r.ParseForm(); err == nil {
+		err = DefaultDecoder.Decode(v, r.PostForm)
+	}
+
+	return
+}
+
+// DecodeForm parses the requests form data into the provided struct.
+//
+// The Content-Type and http method are not checked.
+//
+// NOTE: when includeQueryParams=true both query params and SEO query params will be parsed and
+// included eg. route /user/:id?test=true both 'id' and 'test' are treated as query params and added
+// to the request.Form prior to decoding; in short SEO query params are treated just like normal query params.
+func DecodeMultipartForm(r *http.Request, includeQueryParams bool, maxMemory int64, v interface{}) (err error) {
+
+	if includeQueryParams {
+
+		if err = ParseMultipartForm(r, maxMemory); err == nil {
+			err = DefaultDecoder.Decode(v, r.Form)
+		}
+
+		return
+	}
+
+	if err = r.ParseMultipartForm(maxMemory); err == nil {
+		err = DefaultDecoder.Decode(v, r.MultipartForm.Value)
+	}
+
+	return
+}
+
+// DecodeJSON decodes the request body into the provided struct and limits the request size via
+// an io.LimitReader using the maxMemory param.
+//
+// The Content-Type e.g. "application/json" and http method are not checked.
+//
+// NOTE: when includeQueryParams=true both query params and SEO query params will be parsed and
+// included eg. route /user/:id?test=true both 'id' and 'test' are treated as query params and
+// added to parsed JSON; in short SEO query params are treated just like normal query params.
+func DecodeJSON(r *http.Request, includeQueryParams bool, maxMemory int64, v interface{}) (err error) {
+
+	err = json.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v)
+
+	if includeQueryParams && err == nil {
+		err = DecodeQueryParams(r, includeQueryParams, v)
+	}
+
+	return
+}
+
+// DecodeXML decodes the request body into the provided struct and limits the request size via
+// an io.LimitReader using the maxMemory param.
+//
+// The Content-Type e.g. "application/xml" and http method are not checked.
+//
+// NOTE: when includeQueryParams=true both query params and SEO query params will be parsed and
+// included eg. route /user/:id?test=true both 'id' and 'test' are treated as query params and
+// added to parsed XML; in short SEO query params are treated just like normal query params.
+func DecodeXML(r *http.Request, includeQueryParams bool, maxMemory int64, v interface{}) (err error) {
+
+	err = xml.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v)
+
+	if includeQueryParams && err == nil {
+		err = DecodeQueryParams(r, includeQueryParams, v)
+	}
+
 	return
 }
 
