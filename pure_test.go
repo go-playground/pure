@@ -27,17 +27,23 @@ import (
 
 var (
 	defaultHandler = func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(r.Method))
+		if _, err := w.Write([]byte(r.Method)); err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
 	}
 
 	idHandler = func(w http.ResponseWriter, r *http.Request) {
 		rv := RequestVars(r)
-		w.Write([]byte(rv.URLParam("id")))
+		if _, err := w.Write([]byte(rv.URLParam("id"))); err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
 	}
 
 	params2Handler = func(w http.ResponseWriter, r *http.Request) {
 		rv := RequestVars(r)
-		w.Write([]byte(rv.URLParam("p1") + "|" + rv.URLParam("p2")))
+		if _, err := w.Write([]byte(rv.URLParam("p1") + "|" + rv.URLParam("p2"))); err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
 	}
 
 	defaultMiddleware = func(next http.HandlerFunc) http.HandlerFunc {
