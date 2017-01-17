@@ -310,7 +310,7 @@ func DecodeForm(r *http.Request, includeQueryParams bool, v interface{}) (err er
 	return
 }
 
-// DecodeForm parses the requests form data into the provided struct.
+// DecodeMultipartForm parses the requests form data into the provided struct.
 //
 // The Content-Type and http method are not checked.
 //
