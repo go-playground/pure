@@ -355,8 +355,8 @@ walk: // Outer loop for walking the tree
 					// save param value
 					i := len(rv.params)
 					rv.params = rv.params[:i+1] // expand slice within preallocated capacity
-					rv.params[i].Key = n.path[1:]
-					rv.params[i].Value = path[:end]
+					rv.params[i].key = n.path[1:]
+					rv.params[i].value = path[:end]
 
 					// we need to go deeper!
 					if end < len(path) {
@@ -389,8 +389,8 @@ walk: // Outer loop for walking the tree
 					// save param value
 					i := len(rv.params)
 					rv.params = rv.params[:i+1] // expand slice within preallocated capacity
-					rv.params[i].Key = WildcardParam
-					rv.params[i].Value = path[1:]
+					rv.params[i].key = WildcardParam
+					rv.params[i].value = path[1:]
 
 					handler = n.handler
 					return

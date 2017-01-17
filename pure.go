@@ -61,23 +61,19 @@ type Mux struct {
 	automaticallyHandleOPTIONS bool
 }
 
-// Param is a single URL parameter, consisting of a key and a value.
-type Param struct {
-	Key   string
-	Value string
+type urlParam struct {
+	key   string
+	value string
 }
 
-// Params is a Param-slice, as returned by the router.
-// The slice is ordered, the first URL parameter is also the first slice value.
-// It is therefore safe to read values by the index.
-type Params []Param
+type urlParams []urlParam
 
 // Get returns the URL parameter for the given key, or blank if not found
-func (p Params) Get(key string) (param string) {
+func (p urlParams) Get(key string) (param string) {
 
 	for i := 0; i < len(p); i++ {
-		if p[i].Key == key {
-			param = p[i].Value
+		if p[i].key == key {
+			param = p[i].value
 			return
 		}
 	}
@@ -123,7 +119,7 @@ func New() *Mux {
 	p.pool.New = func() interface{} {
 
 		rv := &requestVars{
-			params: make(Params, p.mostParams),
+			params: make(urlParams, p.mostParams),
 		}
 
 		rv.ctx = context.WithValue(context.Background(), defaultContextIdentifier, rv)

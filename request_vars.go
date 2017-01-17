@@ -10,7 +10,7 @@ type ReqVars interface {
 
 type requestVars struct {
 	ctx        context.Context // holds a copy of it's parent requestVars
-	params     Params
+	params     urlParams
 	formParsed bool
 }
 

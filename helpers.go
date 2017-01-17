@@ -208,7 +208,7 @@ func ParseForm(r *http.Request) error {
 
 		if !rv.formParsed {
 			for _, p := range rv.params {
-				r.Form.Add(p.Key, p.Value)
+				r.Form.Add(p.key, p.value)
 			}
 
 			rv.formParsed = true
@@ -234,7 +234,7 @@ func ParseMultipartForm(r *http.Request, maxMemory int64) error {
 
 		if !rv.formParsed {
 			for _, p := range rv.params {
-				r.Form.Add(p.Key, p.Value)
+				r.Form.Add(p.key, p.value)
 			}
 
 			rv.formParsed = true
@@ -396,7 +396,7 @@ func QueryParams(r *http.Request, includeSEOQueryParams bool) (values url.Values
 			rv := rvi.(*requestVars)
 
 			for _, p := range rv.params {
-				values.Add(p.Key, p.Value)
+				values.Add(p.key, p.value)
 			}
 		}
 	}
