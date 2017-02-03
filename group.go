@@ -9,7 +9,9 @@ import (
 // IRouteGroup interface for router group
 type IRouteGroup interface {
 	IRoutes
-	Group(prefix string, middleware ...Middleware) IRouteGroup
+	GroupWithNone(prefix string) IRouteGroup
+	GroupWithMore(prefix string, middleware ...Middleware) IRouteGroup
+	GroupWithExisting(prefix string) IRouteGroup
 }
 
 // IRoutes interface for routes
@@ -140,31 +142,41 @@ func (g *routeGroup) Match(methods []string, path string, h http.HandlerFunc) {
 	}
 }
 
-// Group creates a new sub router with prefix. It inherits all properties from
-// the parent. Passing middleware overrides parent middleware but still keeps
-// the root level middleware intact.
-func (g *routeGroup) Group(prefix string, middleware ...Middleware) IRouteGroup {
+// GroupWithNone creates a new sub router with specified prefix and no middleware attached.
+func (g *routeGroup) GroupWithNone(prefix string) IRouteGroup {
+
+	return &routeGroup{
+		prefix:     g.prefix + prefix,
+		pure:       g.pure,
+		middleware: make([]Middleware, 0),
+	}
+}
+
+// GroupWithMore creates a new sub router with specified prefix, retains existing middleware and adds new middleware.
+func (g *routeGroup) GroupWithMore(prefix string, middleware ...Middleware) IRouteGroup {
 
 	rg := &routeGroup{
-		prefix: g.prefix + prefix,
-		pure:   g.pure,
+		prefix:     g.prefix + prefix,
+		pure:       g.pure,
+		middleware: make([]Middleware, len(middleware)),
 	}
 
-	if len(middleware) == 0 {
-		rg.middleware = make([]Middleware, len(g.middleware)+len(middleware))
-		copy(rg.middleware, g.middleware)
-
-		return rg
-	}
-
-	if middleware[0] == nil {
-		rg.middleware = make([]Middleware, 0)
-		return rg
-	}
-
-	rg.middleware = make([]Middleware, len(middleware))
 	copy(rg.middleware, g.pure.middleware)
 	rg.Use(middleware...)
+
+	return rg
+}
+
+// GroupWithExisting creates a new sub router with specified prefix and retains existing middleware.
+func (g *routeGroup) GroupWithExisting(prefix string) IRouteGroup {
+
+	rg := &routeGroup{
+		prefix:     g.prefix + prefix,
+		pure:       g.pure,
+		middleware: make([]Middleware, len(g.middleware)),
+	}
+
+	copy(rg.middleware, g.middleware)
 
 	return rg
 }
