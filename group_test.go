@@ -67,7 +67,7 @@ func TestUseAndGroup(t *testing.T) {
 		}
 	}
 
-	sh := p.Group("/superheros", logger2)
+	sh := p.GroupWithMore("/superheros", logger2)
 	sh.Get("/", fn)
 	sh.Get("/list/", fn)
 
@@ -97,7 +97,7 @@ func TestUseAndGroup(t *testing.T) {
 
 	log = ""
 
-	g2 := p.Group("/admins", nil)
+	g2 := p.GroupWithNone("/admins")
 	g2.Get("/", fn)
 	g2.Get("/list/", fn)
 
