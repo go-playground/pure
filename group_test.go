@@ -46,7 +46,7 @@ func TestUseAndGroup(t *testing.T) {
 	Equal(t, body, http.MethodGet)
 	Equal(t, log, "/")
 
-	g := p.GroupWithExisting("/users")
+	g := p.Group("/users")
 	g.Get("/", fn)
 	g.Get("/list/", fn)
 
@@ -81,7 +81,7 @@ func TestUseAndGroup(t *testing.T) {
 	Equal(t, body, http.MethodGet)
 	Equal(t, log, "/superheros/list/2")
 
-	sc := sh.GroupWithExisting("/children")
+	sc := sh.Group("/children")
 	sc.Get("/", fn)
 	sc.Get("/list/", fn)
 

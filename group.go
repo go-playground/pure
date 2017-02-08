@@ -11,7 +11,7 @@ type IRouteGroup interface {
 	IRoutes
 	GroupWithNone(prefix string) IRouteGroup
 	GroupWithMore(prefix string, middleware ...Middleware) IRouteGroup
-	GroupWithExisting(prefix string) IRouteGroup
+	Group(prefix string) IRouteGroup
 }
 
 // IRoutes interface for routes
@@ -167,8 +167,8 @@ func (g *routeGroup) GroupWithMore(prefix string, middleware ...Middleware) IRou
 	return rg
 }
 
-// GroupWithExisting creates a new sub router with specified prefix and retains existing middleware.
-func (g *routeGroup) GroupWithExisting(prefix string) IRouteGroup {
+// Group creates a new sub router with specified prefix and retains existing middleware.
+func (g *routeGroup) Group(prefix string) IRouteGroup {
 
 	rg := &routeGroup{
 		prefix:     g.prefix + prefix,
