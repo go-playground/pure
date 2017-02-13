@@ -1,6 +1,6 @@
 ##Pure
 <img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">
-![Project status](https://img.shields.io/badge/version-4.0.0-green.svg)
+![Project status](https://img.shields.io/badge/version-4.0.1-green.svg)
 [![Build Status](https://semaphoreci.com/api/v1/joeybloggs/pure/branches/master/badge.svg)](https://semaphoreci.com/joeybloggs/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -95,7 +95,7 @@ p.Use(LoggingAndRecovery, Gzip...)
 ...
 p.Post("/users/add", ...)
 
-// creates a group for user + inherits all middleware registered using p.Use()
+// creates a group for /user/:userid + inherits all middleware registered previously by p
 user := p.Group("/user/:userid")
 user.Get("", ...)
 user.Post("", ...)
@@ -104,12 +104,12 @@ user.Delete("/delete", ...)
 contactInfo := user.Group("/contact-info/:cid")
 contactinfo.Delete("/delete", ...)
 
-// creates a group for others + inherits all middleware registered using p.Use() + adds 
+// creates a group for /others, inherits all middleware registered previously by p + adds 
 // OtherHandler to middleware
-others := p.Group("/others", OtherHandler)
+others := p.GroupWithMore("/others", OtherHandler)
 
-// creates a group for admin WITH NO MIDDLEWARE... more can be added using admin.Use()
-admin := p.Group("/admin", nil)
+// creates a group for /admin WITH NO MIDDLEWARE... more can be added using admin.Use()
+admin := p.GroupWithNone("/admin")
 admin.Use(SomeAdminSecurityMiddleware)
 ...
 ```
