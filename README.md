@@ -1,6 +1,6 @@
-##Pure
-<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">
-![Project status](https://img.shields.io/badge/version-4.0.1-green.svg)
+package pure
+============
+<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-4.0.1-green.svg)
 [![Build Status](https://semaphoreci.com/api/v1/joeybloggs/pure/branches/master/badge.svg)](https://semaphoreci.com/joeybloggs/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
