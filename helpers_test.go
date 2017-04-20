@@ -316,6 +316,31 @@ func TestDecodeQueryParams(t *testing.T) {
 	Equal(t, test.ID, 14)
 }
 
+func TestDecodeSEOQueryParams(t *testing.T) {
+
+	type Test struct {
+		ID int `form:"id"`
+	}
+
+	test := new(Test)
+
+	p := New()
+	p.Post("/decode/:id", func(w http.ResponseWriter, r *http.Request) {
+		err := DecodeSEOQueryParams(r, test)
+		Equal(t, err, nil)
+	})
+
+	hf := p.Serve()
+
+	r, _ := http.NewRequest(http.MethodPost, "/decode/13?id=14", nil)
+	w := httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 13) // 13 because 14 isn;t part of the SEO query params
+}
+
 func TestAcceptedLanguages(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/", nil)

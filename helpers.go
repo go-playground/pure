@@ -104,11 +104,9 @@ func ClientIP(r *http.Request) (clientIP string) {
 }
 
 // JSON marshals provided interface + returns JSON + status code
-func JSON(w http.ResponseWriter, status int, i interface{}) (err error) {
+func JSON(w http.ResponseWriter, status int, i interface{}) error {
 
-	b := bpool.Get().([]byte)
-
-	b, err = json.Marshal(i)
+	b, err := json.Marshal(i)
 	if err != nil {
 		return err
 	}
@@ -117,8 +115,7 @@ func JSON(w http.ResponseWriter, status int, i interface{}) (err error) {
 	w.WriteHeader(status)
 	_, err = w.Write(b)
 
-	bpool.Put(b)
-	return
+	return err
 }
 
 // JSONBytes returns provided JSON response with status code
@@ -132,13 +129,11 @@ func JSONBytes(w http.ResponseWriter, status int, b []byte) (err error) {
 
 // JSONP sends a JSONP response with status code and uses `callback` to construct
 // the JSONP payload.
-func JSONP(w http.ResponseWriter, status int, i interface{}, callback string) (err error) {
+func JSONP(w http.ResponseWriter, status int, i interface{}, callback string) error {
 
-	b := bpool.Get().([]byte)
-
-	b, err = json.Marshal(i)
+	b, err := json.Marshal(i)
 	if err != nil {
-		return
+		return err
 	}
 
 	w.Header().Set(ContentType, ApplicationJavaScriptCharsetUTF8)
@@ -151,19 +146,15 @@ func JSONP(w http.ResponseWriter, status int, i interface{}, callback string) (e
 		}
 	}
 
-	bpool.Put(b)
-
-	return
+	return err
 }
 
 // XML marshals provided interface + returns XML + status code
-func XML(w http.ResponseWriter, status int, i interface{}) (err error) {
+func XML(w http.ResponseWriter, status int, i interface{}) error {
 
-	b := bpool.Get().([]byte)
-
-	b, err = xml.Marshal(i)
+	b, err := xml.Marshal(i)
 	if err != nil {
-		return
+		return err
 	}
 
 	w.Header().Set(ContentType, ApplicationXMLCharsetUTF8)
@@ -173,9 +164,7 @@ func XML(w http.ResponseWriter, status int, i interface{}) (err error) {
 		_, err = w.Write(b)
 	}
 
-	bpool.Put(b)
-
-	return
+	return err
 }
 
 // XMLBytes returns provided XML response with status code
@@ -380,6 +369,25 @@ func DecodeXML(r *http.Request, includeQueryParams bool, maxMemory int64, v inte
 // the only difference is that it will always pass true for includeSEOQueryParams
 func DecodeQueryParams(r *http.Request, includeSEOQueryParams bool, v interface{}) (err error) {
 	err = DefaultDecoder.Decode(v, QueryParams(r, includeSEOQueryParams))
+	return
+}
+
+// DecodeSEOQueryParams decodes the SEO Query params only and ignores the normal URL Query params.
+func DecodeSEOQueryParams(r *http.Request, v interface{}) (err error) {
+
+	if rvi := r.Context().Value(defaultContextIdentifier); rvi != nil {
+
+		rv := rvi.(*requestVars)
+
+		values := make(url.Values, len(rv.params))
+
+		for _, p := range rv.params {
+			values.Add(p.key, p.value)
+		}
+
+		err = DefaultDecoder.Decode(v, values)
+	}
+
 	return
 }
 

@@ -9,12 +9,6 @@ import (
 )
 
 var (
-	bpool = &sync.Pool{
-		New: func() interface{} {
-			return make([]byte, 64)
-		},
-	}
-
 	defaultContextIdentifier = &struct {
 		name string
 	}{
