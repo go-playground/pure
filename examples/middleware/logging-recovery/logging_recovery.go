@@ -127,8 +127,6 @@ func LoggingAndRecovery(color bool) pure.Middleware {
 					color = status400
 				case code >= http.StatusMultipleChoices:
 					color = status300
-				default:
-					color = status
 				}
 
 				log.Printf("%s %d %s[%s%s%s] %q %v %d\n", color, code, ansi.Reset, color, r.Method, ansi.Reset, r.URL, time.Since(t1), lw.Size())
