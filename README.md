@@ -72,15 +72,15 @@ URL Params
 p := p.New()
 
 // the matching param will be stored in the context's params with name "id"
-l.Get("/user/:id", UserHandler)
+p.Get("/user/:id", UserHandler)
 
 // extract params like so
-rv := pure.ReqestVars(r) // done this way so only have to extract from context once, read above
+rv := pure.RequestVars(r) // done this way so only have to extract from context once, read above
 rv.URLParam(paramname)
 
 // serve css, js etc.. pure.RequestVars(r).URLParam(pure.WildcardParam) will return the remaining path if 
 // you need to use it in a custom handler...
-l.Get("/static/*", http.FileServer(http.Dir("static/"))) 
+p.Get("/static/*", http.FileServer(http.Dir("static/").ServeHTTP)) 
 
 ...
 ```
@@ -131,17 +131,17 @@ Misc
 ```go
 
 // set custom 404 ( not Found ) handler
-l.Register404(404Handler, middleware_like_logging)
+p.Register404(404Handler, middleware_like_logging)
 
 // Redirect to or from ending slash if route not found, default is true
-l.SetRedirectTrailingSlash(true)
+p.SetRedirectTrailingSlash(true)
 
 // Handle 405 ( Method Not allowed ), default is false
-l.RegisterMethodNotAllowed(middleware)
+p.RegisterMethodNotAllowed(middleware)
 
 // automatically handle OPTION requests; manually configured
 // OPTION handlers take precedence. default false
-l.RegisterAutomaticOPTIONS(middleware)
+p.RegisterAutomaticOPTIONS(middleware)
 
 ```
 
