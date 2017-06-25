@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-playground/pure"
-	mw "github.com/go-playground/pure/examples/middleware/logging-recovery"
+	mw "github.com/go-playground/pure/_examples/middleware/logging-recovery"
 )
 
 func main() {

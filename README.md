@@ -1,6 +1,6 @@
 package pure
 ============
-<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-4.1.0-green.svg)
+<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-4.1.1-green.svg)
 [![Build Status](https://travis-ci.org/go-playground/pure.svg?branch=master)](https://travis-ci.org/go-playground/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -38,7 +38,7 @@ import (
 	"net/http"
 
 	"github.com/go-playground/pure"
-	mw "github.com/go-playground/pure/examples/middleware/logging-recovery"
+	mw "github.com/go-playground/pure/_examples/middleware/logging-recovery"
 )
 
 func main() {
@@ -152,7 +152,7 @@ comply with the following rule(s):
 
 * Are completely reusable by the community without modification
 
-Other middleware will be listed under the examples/middleware/... folder for a quick copy/paste modify. As an example a LoddingAndRecovery middleware is very application dependent and therefore will be listed under the examples/middleware/...
+Other middleware will be listed under the _examples/middleware/... folder for a quick copy/paste modify. As an example a LoddingAndRecovery middleware is very application dependent and therefore will be listed under the _examples/middleware/...
 
 Benchmarks
 -----------
