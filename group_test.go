@@ -177,3 +177,73 @@ func TestMatch(t *testing.T) {
 		}
 	}
 }
+
+func TestGrouplogic(t *testing.T) {
+
+	var aa, bb, cc, tl int
+
+	aM := func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			aa++
+			next(w, r)
+		}
+	}
+
+	bM := func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			bb++
+			next(w, r)
+		}
+	}
+
+	cM := func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			cc++
+			next(w, r)
+		}
+	}
+
+	p := New()
+	p.Use(func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			tl++
+			next(w, r)
+		}
+	})
+
+	a := p.GroupWithMore("/a", aM)
+	a.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("a-ok"))
+	})
+
+	b := a.GroupWithMore("/b", bM)
+	b.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("b-ok"))
+	})
+
+	c := b.GroupWithMore("/c", cM)
+	c.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("c-ok"))
+	})
+
+	code, body := request(http.MethodGet, "/a/test", p)
+	Equal(t, code, http.StatusOK)
+	Equal(t, body, "a-ok")
+	Equal(t, tl, 1)
+	Equal(t, aa, 1)
+
+	code, body = request(http.MethodGet, "/a/b/test", p)
+	Equal(t, code, http.StatusOK)
+	Equal(t, body, "b-ok")
+	Equal(t, tl, 2)
+	Equal(t, aa, 2)
+	Equal(t, bb, 1)
+
+	code, body = request(http.MethodGet, "/a/b/c/test", p)
+	Equal(t, code, http.StatusOK)
+	Equal(t, body, "c-ok")
+	Equal(t, tl, 3)
+	Equal(t, aa, 3)
+	Equal(t, bb, 2)
+	Equal(t, cc, 1)
+}

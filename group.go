@@ -144,7 +144,6 @@ func (g *routeGroup) Match(methods []string, path string, h http.HandlerFunc) {
 
 // GroupWithNone creates a new sub router with specified prefix and no middleware attached.
 func (g *routeGroup) GroupWithNone(prefix string) IRouteGroup {
-
 	return &routeGroup{
 		prefix:     g.prefix + prefix,
 		pure:       g.pure,
@@ -154,29 +153,23 @@ func (g *routeGroup) GroupWithNone(prefix string) IRouteGroup {
 
 // GroupWithMore creates a new sub router with specified prefix, retains existing middleware and adds new middleware.
 func (g *routeGroup) GroupWithMore(prefix string, middleware ...Middleware) IRouteGroup {
-
-	rg := &routeGroup{
-		prefix:     g.prefix + prefix,
-		pure:       g.pure,
-		middleware: make([]Middleware, len(middleware)),
-	}
-
-	copy(rg.middleware, g.pure.middleware)
-	rg.Use(middleware...)
-
-	return rg
-}
-
-// Group creates a new sub router with specified prefix and retains existing middleware.
-func (g *routeGroup) Group(prefix string) IRouteGroup {
-
 	rg := &routeGroup{
 		prefix:     g.prefix + prefix,
 		pure:       g.pure,
 		middleware: make([]Middleware, len(g.middleware)),
 	}
-
 	copy(rg.middleware, g.middleware)
+	rg.Use(middleware...)
+	return rg
+}
 
+// Group creates a new sub router with specified prefix and retains existing middleware.
+func (g *routeGroup) Group(prefix string) IRouteGroup {
+	rg := &routeGroup{
+		prefix:     g.prefix + prefix,
+		pure:       g.pure,
+		middleware: make([]Middleware, len(g.middleware)),
+	}
+	copy(rg.middleware, g.middleware)
 	return rg
 }
