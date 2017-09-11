@@ -80,7 +80,7 @@ rv.URLParam(paramname)
 
 // serve css, js etc.. pure.RequestVars(r).URLParam(pure.WildcardParam) will return the remaining path if 
 // you need to use it in a custom handler...
-p.Get("/static/*", http.FileServer(http.Dir("static/").ServeHTTP)) 
+p.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 
 ...
 ```
