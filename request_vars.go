@@ -14,7 +14,7 @@ type requestVars struct {
 	formParsed bool
 }
 
-// Params returns the current routes Params
+// Param returns the current routes Param
 func (r *requestVars) URLParam(pname string) string {
 	return r.params.Get(pname)
 }
