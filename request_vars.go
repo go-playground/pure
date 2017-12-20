@@ -18,3 +18,8 @@ type requestVars struct {
 func (r *requestVars) URLParam(pname string) string {
 	return r.params.Get(pname)
 }
+
+// Params returns the current routes Params
+func (r *requestVars) URLParams() []urlParam {
+	return r.params
+}
