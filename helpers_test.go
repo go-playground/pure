@@ -219,6 +219,30 @@ func TestDecode(t *testing.T) {
 	Equal(t, test.Posted, "value")
 	Equal(t, test.MultiPartPosted, "value")
 
+	var buff bytes.Buffer
+	gzw := gzip.NewWriter(&buff)
+	defer func() {
+		_ = gzw.Close()
+	}()
+	_, err = gzw.Write([]byte(jsonBody))
+	Equal(t, err, nil)
+
+	err = gzw.Close()
+	Equal(t, err, nil)
+
+	test = new(TestStruct)
+	r, _ = http.NewRequest(http.MethodPost, "/decode/13?id=14", &buff)
+	r.Header.Set(ContentType, ApplicationJSON)
+	r.Header.Set(ContentEncoding, Gzip)
+	w = httptest.NewRecorder()
+
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, test.ID, 14)
+	Equal(t, test.Posted, "value")
+	Equal(t, test.MultiPartPosted, "value")
+
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode-noquery/13?id=14", strings.NewReader(jsonBody))
 	r.Header.Set(ContentType, ApplicationJSON)

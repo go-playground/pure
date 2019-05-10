@@ -1,6 +1,7 @@
 package pure
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"encoding/xml"
 	"io"
@@ -333,13 +334,18 @@ func DecodeMultipartForm(r *http.Request, includeQueryParams bool, maxMemory int
 // included eg. route /user/:id?test=true both 'id' and 'test' are treated as query params and
 // added to parsed JSON; in short SEO query params are treated just like normal query params.
 func DecodeJSON(r *http.Request, includeQueryParams bool, maxMemory int64, v interface{}) (err error) {
+	var body io.Reader = r.Body
 
-	err = json.NewDecoder(io.LimitReader(r.Body, maxMemory)).Decode(v)
-
+	if encoding := r.Header.Get(ContentEncoding); encoding == Gzip {
+		body, err = gzip.NewReader(r.Body)
+		if err != nil {
+			return err
+		}
+	}
+	err = json.NewDecoder(io.LimitReader(body, maxMemory)).Decode(v)
 	if includeQueryParams && err == nil {
 		err = DecodeQueryParams(r, includeQueryParams, v)
 	}
-
 	return
 }
 

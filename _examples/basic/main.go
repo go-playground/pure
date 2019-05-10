@@ -10,7 +10,7 @@ import (
 func main() {
 
 	p := pure.New()
-	p.Use(mw.LoggingAndRecovery(true))
+	p.Use(mw.LoggingAndRecovery(false))
 
 	p.Get("/", helloWorld)
 
