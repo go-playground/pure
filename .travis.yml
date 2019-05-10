@@ -15,7 +15,7 @@ notifications:
 before_install:
   - go get -u github.com/go-playground/overalls
   - go get -u github.com/mattn/goveralls
-  - go get -u get github.com/golangci/golangci-lint/cmd/golangci-lint
+  - go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
   - go get -u github.com/client9/misspell/cmd/misspell
 
 before_script:
