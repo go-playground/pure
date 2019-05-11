@@ -13,8 +13,8 @@ notifications:
         on_failure: always
 
 before_install:
-  - go install github.com/go-playground/overalls
-  - go install github.com/mattn/goveralls
+  - go get -u github.com/go-playground/overalls
+  - go get -u github.com/mattn/goveralls
 
 script:
  - make test
