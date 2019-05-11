@@ -13,10 +13,11 @@ notifications:
         on_failure: always
 
 before_install:
-  - go get -u github.com/go-playground/overalls
-  - go get -u github.com/mattn/goveralls
+  - GO111MODULE=on go get -u github.com/go-playground/overalls
+  - GO111MODULE=on go get -u github.com/mattn/goveralls
 
 script:
+ - GO111MODULE=on go mod download
  - make lint
  - make test
 
