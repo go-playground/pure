@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 
+	httpext "github.com/go-playground/pkg/net/http"
+
 	"github.com/go-playground/pure"
 )
 
@@ -22,8 +24,8 @@ type gzipWriter struct {
 func (w *gzipWriter) Write(b []byte) (int, error) {
 
 	if !w.sniffComplete {
-		if w.Header().Get(pure.ContentType) == "" {
-			w.Header().Set(pure.ContentType, http.DetectContentType(b))
+		if w.Header().Get(httpext.ContentType) == "" {
+			w.Header().Set(httpext.ContentType, http.DetectContentType(b))
 		}
 		w.sniffComplete = true
 	}
@@ -39,10 +41,6 @@ func (w *gzipWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return w.ResponseWriter.(http.Hijacker).Hijack()
 }
 
-func (w *gzipWriter) CloseNotify() <-chan bool {
-	return w.ResponseWriter.(http.CloseNotifier).CloseNotify()
-}
-
 var gzipPool = sync.Pool{
 	New: func() interface{} {
 		return &gzipWriter{Writer: gzip.NewWriter(ioutil.Discard)}
@@ -55,9 +53,9 @@ func Gzip(next http.HandlerFunc) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		w.Header().Add(pure.Vary, pure.AcceptEncoding)
+		w.Header().Add(httpext.Vary, httpext.AcceptEncoding)
 
-		if strings.Contains(r.Header.Get(pure.AcceptEncoding), pure.Gzip) {
+		if strings.Contains(r.Header.Get(httpext.AcceptEncoding), httpext.Gzip) {
 
 			gz := gzipPool.Get().(*gzipWriter)
 			gz.sniffComplete = false
@@ -65,7 +63,7 @@ func Gzip(next http.HandlerFunc) http.HandlerFunc {
 			gzr.Reset(w)
 			gz.ResponseWriter = w
 
-			w.Header().Set(pure.ContentEncoding, pure.Gzip)
+			w.Header().Set(httpext.ContentEncoding, httpext.Gzip)
 
 			w = gz
 			defer func() {
@@ -73,7 +71,7 @@ func Gzip(next http.HandlerFunc) http.HandlerFunc {
 				if !gz.sniffComplete {
 					// We have to reset response to it's pristine state when
 					// nothing is written to body.
-					w.Header().Del(pure.ContentEncoding)
+					w.Header().Del(httpext.ContentEncoding)
 					gzr.Reset(ioutil.Discard)
 				}
 
@@ -108,9 +106,9 @@ func GzipLevel(level int) pure.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
-			w.Header().Add(pure.Vary, pure.AcceptEncoding)
+			w.Header().Add(httpext.Vary, httpext.AcceptEncoding)
 
-			if strings.Contains(r.Header.Get(pure.AcceptEncoding), pure.Gzip) {
+			if strings.Contains(r.Header.Get(httpext.AcceptEncoding), httpext.Gzip) {
 
 				gz := gzipPool.Get().(*gzipWriter)
 				gz.sniffComplete = false
@@ -118,7 +116,7 @@ func GzipLevel(level int) pure.Middleware {
 				gzr.Reset(w)
 				gz.ResponseWriter = w
 
-				w.Header().Set(pure.ContentEncoding, pure.Gzip)
+				w.Header().Set(httpext.ContentEncoding, httpext.Gzip)
 
 				w = gz
 				defer func() {
@@ -126,7 +124,7 @@ func GzipLevel(level int) pure.Middleware {
 					if !gz.sniffComplete {
 						// We have to reset response to it's pristine state when
 						// nothing is written to body.
-						w.Header().Del(pure.ContentEncoding)
+						w.Header().Del(httpext.ContentEncoding)
 						gzr.Reset(ioutil.Discard)
 					}
 

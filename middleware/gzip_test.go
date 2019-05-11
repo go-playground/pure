@@ -10,7 +10,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
+
+	httpext "github.com/go-playground/pkg/net/http"
 
 	"github.com/go-playground/pure"
 	. "gopkg.in/go-playground/assert.v1"
@@ -32,7 +33,7 @@ func TestGzip(t *testing.T) {
 	p := pure.New()
 	p.Use(Gzip)
 	p.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("test"))
+		_, _ = w.Write([]byte("test"))
 	})
 	p.Get("/empty", func(w http.ResponseWriter, r *http.Request) {
 	})
@@ -53,13 +54,13 @@ func TestGzip(t *testing.T) {
 	Equal(t, string(b), "test")
 
 	req, _ = http.NewRequest(http.MethodGet, server.URL+"/test", nil)
-	req.Header.Set(pure.AcceptEncoding, "gzip")
+	req.Header.Set(httpext.AcceptEncoding, "gzip")
 
 	resp, err = client.Do(req)
 	Equal(t, err, nil)
 	Equal(t, resp.StatusCode, http.StatusOK)
-	Equal(t, resp.Header.Get(pure.ContentEncoding), pure.Gzip)
-	Equal(t, resp.Header.Get(pure.ContentType), pure.TextPlainCharsetUTF8)
+	Equal(t, resp.Header.Get(httpext.ContentEncoding), httpext.Gzip)
+	Equal(t, resp.Header.Get(httpext.ContentType), httpext.TextPlain)
 
 	r, err := gzip.NewReader(resp.Body)
 	Equal(t, err, nil)
@@ -84,7 +85,7 @@ func TestGzipLevel(t *testing.T) {
 	p := pure.New()
 	p.Use(GzipLevel(flate.BestCompression))
 	p.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("test"))
+		_, _ = w.Write([]byte("test"))
 	})
 	p.Get("/empty", func(w http.ResponseWriter, r *http.Request) {
 	})
@@ -105,13 +106,13 @@ func TestGzipLevel(t *testing.T) {
 	Equal(t, string(b), "test")
 
 	req, _ = http.NewRequest(http.MethodGet, server.URL+"/test", nil)
-	req.Header.Set(pure.AcceptEncoding, "gzip")
+	req.Header.Set(httpext.AcceptEncoding, "gzip")
 
 	resp, err = client.Do(req)
 	Equal(t, err, nil)
 	Equal(t, resp.StatusCode, http.StatusOK)
-	Equal(t, resp.Header.Get(pure.ContentEncoding), pure.Gzip)
-	Equal(t, resp.Header.Get(pure.ContentType), pure.TextPlainCharsetUTF8)
+	Equal(t, resp.Header.Get(httpext.ContentEncoding), httpext.Gzip)
+	Equal(t, resp.Header.Get(httpext.ContentType), httpext.TextPlain)
 
 	r, err := gzip.NewReader(resp.Body)
 	Equal(t, err, nil)
@@ -155,25 +156,6 @@ func TestGzipFlush(t *testing.T) {
 	NotEqual(t, n2, buff.Len())
 }
 
-func TestGzipCloseNotify(t *testing.T) {
-
-	rec := newCloseNotifyingRecorder()
-	buf := new(bytes.Buffer)
-	w := gzip.NewWriter(buf)
-	gw := gzipWriter{Writer: w, ResponseWriter: rec}
-	closed := false
-	notifier := gw.CloseNotify()
-	rec.close()
-
-	select {
-	case <-notifier:
-		closed = true
-	case <-time.After(time.Second):
-	}
-
-	Equal(t, closed, true)
-}
-
 func TestGzipHijack(t *testing.T) {
 
 	rec := newCloseNotifyingRecorder()
@@ -184,7 +166,7 @@ func TestGzipHijack(t *testing.T) {
 	_, bufrw, err := gw.Hijack()
 	Equal(t, err, nil)
 
-	bufrw.WriteString("test")
+	_, _ = bufrw.WriteString("test")
 }
 
 type closeNotifyingRecorder struct {
@@ -199,7 +181,7 @@ func newCloseNotifyingRecorder() *closeNotifyingRecorder {
 	}
 }
 
-func (c *closeNotifyingRecorder) close() {
+func (c *closeNotifyingRecorder) Close() {
 	c.closed <- true
 }
 

@@ -2,10 +2,11 @@ package pure
 
 import (
 	"context"
-	"encoding/xml"
 	"net/http"
 	"strings"
 	"sync"
+
+	httpext "github.com/go-playground/pkg/net/http"
 )
 
 var (
@@ -14,8 +15,6 @@ var (
 	}{
 		name: "pure",
 	}
-
-	xmlHeaderBytes = []byte(xml.Header)
 )
 
 // Mux is the main request multiplexer
@@ -64,14 +63,12 @@ type urlParams []urlParam
 
 // Get returns the URL parameter for the given key, or blank if not found
 func (p urlParams) Get(key string) (param string) {
-
 	for i := 0; i < len(p); i++ {
 		if p[i].key == key {
 			param = p[i].value
 			return
 		}
 	}
-
 	return
 }
 
@@ -94,7 +91,6 @@ var (
 
 // New Creates and returns a new Pure instance
 func New() *Mux {
-
 	p := &Mux{
 		routeGroup: routeGroup{
 			middleware: make([]Middleware, 0),
@@ -108,7 +104,6 @@ func New() *Mux {
 		handleMethodNotAllowed:     false,
 		automaticallyHandleOPTIONS: false,
 	}
-
 	p.routeGroup.pure = p
 	p.pool.New = func() interface{} {
 
@@ -120,20 +115,16 @@ func New() *Mux {
 
 		return rv
 	}
-
 	return p
 }
 
 // Register404 alows for overriding of the not found handler function.
 // NOTE: this is run after not finding a route even after redirecting with the trailing slash
 func (p *Mux) Register404(notFound http.HandlerFunc, middleware ...Middleware) {
-
 	h := notFound
-
 	for i := len(middleware) - 1; i >= 0; i-- {
 		h = middleware[i](h)
 	}
-
 	p.http404 = h
 }
 
@@ -141,15 +132,12 @@ func (p *Mux) Register404(notFound http.HandlerFunc, middleware ...Middleware) {
 // automatically handle OPTION requests; manually configured
 // OPTION handlers take precedence. default true
 func (p *Mux) RegisterAutomaticOPTIONS(middleware ...Middleware) {
-
 	p.automaticallyHandleOPTIONS = true
-
 	h := automaticOPTIONSHandler
 
 	for i := len(middleware) - 1; i >= 0; i-- {
 		h = middleware[i](h)
 	}
-
 	p.httpOPTIONS = h
 }
 
@@ -163,41 +151,32 @@ func (p *Mux) SetRedirectTrailingSlash(set bool) {
 // RegisterMethodNotAllowed tells pure whether to
 // handle the http 405 Method Not Allowed status code
 func (p *Mux) RegisterMethodNotAllowed(middleware ...Middleware) {
-
 	p.handleMethodNotAllowed = true
-
 	h := methodNotAllowedHandler
 
 	for i := len(middleware) - 1; i >= 0; i-- {
 		h = middleware[i](h)
 	}
-
 	p.http405 = h
 }
 
 // Serve returns an http.Handler to be used.
 func (p *Mux) Serve() http.Handler {
-
 	// reserved for any logic that needs to happen before serving starts.
 	// i.e. although this router does not use priority to determine route order
 	// could add sorting of tree nodes here....
-
 	return http.HandlerFunc(p.serveHTTP)
 }
 
 // Conforms to the http.Handler interface.
 func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
-
 	tree := p.trees[r.Method]
-
 	var h http.HandlerFunc
 	var rv *requestVars
 
 	if tree != nil {
 		if h, rv = tree.find(r.URL.Path, p); h == nil {
-
 			if p.redirectTrailingSlash && len(r.URL.Path) > 1 {
-
 				// find again all lowercase
 				orig := r.URL.Path
 				lc := strings.ToLower(orig)
@@ -211,13 +190,11 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 						goto END
 					}
 				}
-
 				if lc[len(lc)-1:] == basePath {
 					lc = lc[:len(lc)-1]
 				} else {
 					lc = lc + basePath
 				}
-
 				if h, _ = tree.find(lc, p); h != nil {
 					r.URL.Path = lc
 					h = p.redirect(r.Method, r.URL.String())
@@ -225,14 +202,12 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 					goto END
 				}
 			}
-
 		} else {
 			goto END
 		}
 	}
 
 	if p.automaticallyHandleOPTIONS && r.Method == http.MethodOptions {
-
 		if r.URL.Path == "*" { // check server-wide OPTIONS
 
 			for m := range p.trees {
@@ -241,32 +216,26 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 
-				w.Header().Add(Allow, m)
+				w.Header().Add(httpext.Allow, m)
 			}
-
 		} else {
-
 			for m, ctree := range p.trees {
 
 				if m == r.Method || m == http.MethodOptions {
 					continue
 				}
 				if h, _ = ctree.find(r.URL.Path, p); h != nil {
-					w.Header().Add(Allow, m)
+					w.Header().Add(httpext.Allow, m)
 				}
 			}
 		}
-
-		w.Header().Add(Allow, http.MethodOptions)
+		w.Header().Add(httpext.Allow, http.MethodOptions)
 		h = p.httpOPTIONS
-
 		goto END
 	}
 
 	if p.handleMethodNotAllowed {
-
 		var found bool
-
 		for m, ctree := range p.trees {
 
 			if m == r.Method {
@@ -274,26 +243,22 @@ func (p *Mux) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if h, _ = ctree.find(r.URL.Path, p); h != nil {
-				w.Header().Add(Allow, m)
+				w.Header().Add(httpext.Allow, m)
 				found = true
 			}
 		}
-
 		if found {
 			h = p.http405
 			goto END
 		}
 	}
-
 	// not found
 	h = p.http404
 
 END:
 
 	if rv != nil {
-
 		rv.formParsed = false
-
 		// store on context
 		r = r.WithContext(rv.ctx)
 	}
@@ -306,13 +271,10 @@ END:
 }
 
 func (p *Mux) redirect(method string, to string) (h http.HandlerFunc) {
-
 	code := http.StatusMovedPermanently
-
 	if method != http.MethodGet {
 		code = http.StatusPermanentRedirect
 	}
-
 	h = func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, to, code)
 	}
@@ -320,6 +282,5 @@ func (p *Mux) redirect(method string, to string) (h http.HandlerFunc) {
 	for i := len(p.middleware) - 1; i >= 0; i-- {
 		h = p.middleware[i](h)
 	}
-
 	return
 }

@@ -15,17 +15,13 @@ notifications:
 before_install:
   - go get -u github.com/go-playground/overalls
   - go get -u github.com/mattn/goveralls
-#  - go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
   - go get -u github.com/client9/misspell/cmd/misspell
 
-before_script:
-  - go vet ./...
-
 script:
- - gofmt -d -s .
-# - golangci-lint run
  - find . -type f | xargs misspell -source=text
- - go test -cover -race ./...
+ - gofmt -d -s .
+ - make lint
+ - make test
 
 after_success: |
   [ $TRAVIS_GO_VERSION = 1.12.5 ] &&

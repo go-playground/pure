@@ -1,6 +1,6 @@
 package pure
 ============
-<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-4.2.0-green.svg)
+<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-5.0.0-green.svg)
 [![Build Status](https://travis-ci.org/go-playground/pure.svg?branch=master)](https://travis-ci.org/go-playground/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -10,6 +10,8 @@ package pure
 
 Pure is a fast radix-tree based HTTP router that sticks to the native implementations of Go's "net/http" package;
 in essence, keeping the handler implementations 'pure' by using Go 1.7's "context" package.
+
+This makes heavy usage of `github.com/go-playground/pkg` for HTTP abstractions.
 
 Why Another HTTP Router?
 ------------------------
@@ -156,40 +158,42 @@ Other middleware will be listed under the _examples/middleware/... folder for a 
 
 Benchmarks
 -----------
-Run on i5-7600 16 GB DDR4-2400 using Go version go1.8.1 linux/amd64
+Run on i5-7600 16 GB DDR4-2400 using Go version go1.12.5 darwin/amd64
 
-NOTICE: pure uses a custom version of [httprouter](https://github.com/julienschmidt/httprouter)'s radix tree, benchmarks can be found [here](https://github.com/joeybloggs/go-http-routing-benchmark/tree/pure-and-lars) the slowdown is with the use of the `context` package, as you can see when no SEO params are defined, and therefore no need to store anything in the context, it is faster than even lars.
+NOTICE: pure uses a custom version of [httprouter](https://github.com/julienschmidt/httprouter)'s radix tree, benchmarks can be found [here](https://github.com/deankarn/go-http-routing-benchmark/tree/pure-and-lars) the slowdown is with the use of the `context` package, as you can see when no SEO params are defined, and therefore no need to store anything in the context, it is faster than even lars.
 
 ```go
 go test -bench=. -benchmem=true
 #GithubAPI Routes: 203
-   Pure: 37544 Bytes
+   Pure: 37096 Bytes
 
 #GPlusAPI Routes: 13
    Pure: 2792 Bytes
 
 #ParseAPI Routes: 26
-   Pure: 5056 Bytes
+   Pure: 5040 Bytes
 
 #Static Routes: 157
-   Pure: 21208 Bytes
+   HttpServeMux: 14992 Bytes
+   Pure: 21096 Bytes
 
-BenchmarkPure_Param        	10000000	       130 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_Param5       	10000000	       171 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_Param20      	 5000000	       316 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_ParamWrite   	10000000	       171 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_GithubStatic 	50000000	        35.8 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GithubParam  	10000000	       187 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_GithubAll    	   50000	     35691 ns/op	   42754 B/op	     167 allocs/op
-BenchmarkPure_GPlusStatic  	100000000	        22.7 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_GPlusParam   	10000000	       152 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_GPlus2Params 	10000000	       173 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_GPlusAll     	 1000000	      1902 ns/op	    2816 B/op	      11 allocs/op
-BenchmarkPure_ParseStatic  	100000000	        23.5 ns/op	       0 B/op	       0 allocs/op
-BenchmarkPure_ParseParam   	10000000	       136 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_Parse2Params 	10000000	       149 ns/op	     256 B/op	       1 allocs/op
-BenchmarkPure_ParseAll     	  500000	      3091 ns/op	    4096 B/op	      16 allocs/op
-BenchmarkPure_StaticAll    	  200000	      8547 ns/op	       0 B/op	       0 allocs/op
+
+BenchmarkPure_Param             10000000               184 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_Param5            10000000               236 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_Param20            5000000               393 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_ParamWrite         5000000               240 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_GithubStatic      50000000                36.2 ns/op             0 B/op          0 allocs/op
+BenchmarkPureGithubParam        10000000               230 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_GithubAll            30000             43887 ns/op           64130 B/op        334 allocs/op
+BenchmarkPure_GPlusStatic       50000000                22.8 ns/op             0 B/op          0 allocs/op
+BenchmarkPure_GPlusParam        10000000               192 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_GPlus2Params      10000000               211 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_GPlusAll            500000              2457 ns/op            4224 B/op         22 allocs/op
+BenchmarkPure_ParseStatic       100000000               23.7 ns/op             0 B/op          0 allocs/op
+BenchmarkPure_ParseParam        10000000               177 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_Parse2Params      10000000               193 ns/op             384 B/op          2 allocs/op
+BenchmarkPure_ParseAll            500000              3751 ns/op            6144 B/op         32 allocs/op
+BenchmarkPure_StaticAll           200000              8574 ns/op               0 B/op          0 allocs/op
 ```
 
 Package Versioning
