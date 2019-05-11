@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"testing"
 
+	httpext "github.com/go-playground/pkg/net/http"
 	. "gopkg.in/go-playground/assert.v1"
 )
 
@@ -372,7 +373,7 @@ func TestMethodNotAllowed(t *testing.T) {
 
 	Equal(t, w.Code, http.StatusMethodNotAllowed)
 
-	allow, ok := w.Header()[Allow]
+	allow, ok := w.Header()[httpext.Allow]
 	Equal(t, ok, true)
 	Equal(t, len(allow), 10)
 
@@ -399,7 +400,7 @@ func TestMethodNotAllowed2(t *testing.T) {
 
 	Equal(t, w.Code, http.StatusMethodNotAllowed)
 
-	allow, ok := w.Header()[Allow]
+	allow, ok := w.Header()[httpext.Allow]
 
 	// Sometimes this array is out of order for whatever reason?
 	if allow[0] == http.MethodGet {
@@ -437,7 +438,7 @@ func TestAutomaticallyHandleOPTIONS(t *testing.T) {
 
 	Equal(t, w.Code, http.StatusOK)
 
-	allow, ok := w.Header()[Allow]
+	allow, ok := w.Header()[httpext.Allow]
 
 	Equal(t, ok, true)
 	Equal(t, len(allow), 10)
@@ -448,7 +449,7 @@ func TestAutomaticallyHandleOPTIONS(t *testing.T) {
 
 	Equal(t, w.Code, http.StatusOK)
 
-	allow, ok = w.Header()[Allow]
+	allow, ok = w.Header()[httpext.Allow]
 
 	Equal(t, ok, true)
 	Equal(t, len(allow), 10)
@@ -857,7 +858,7 @@ type closeNotifyingRecorder struct {
 	closed chan bool
 }
 
-func (c *closeNotifyingRecorder) close() {
+func (c *closeNotifyingRecorder) Close() {
 	c.closed <- true
 }
 
@@ -903,7 +904,7 @@ func requestMultiPart(method string, url string, p *Mux) (int, string) {
 	}
 
 	r, _ := http.NewRequest(method, url, body)
-	r.Header.Set(ContentType, writer.FormDataContentType())
+	r.Header.Set(httpext.ContentType, writer.FormDataContentType())
 	wr := &closeNotifyingRecorder{
 		httptest.NewRecorder(),
 		make(chan bool, 1),

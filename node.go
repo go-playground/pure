@@ -32,17 +32,14 @@ type node struct {
 }
 
 func (e existingParams) check(param string, path string) {
-
 	if _, ok := e[param]; ok {
 		panic("Duplicate param name '" + param + "' detected for route '" + path + "'")
 	}
-
 	e[param] = struct{}{}
 }
 
 // increments priority of the given child and reorders if necessary
 func (n *node) incrementChildPrio(pos int) int {
-
 	n.children[pos].priority++
 	prio := n.children[pos].priority
 
@@ -61,16 +58,13 @@ func (n *node) incrementChildPrio(pos int) int {
 			n.indices[pos:pos+1] + // the index char we move
 			n.indices[newPos:pos] + n.indices[pos+1:] // rest without char at 'pos'
 	}
-
 	return newPos
 }
 
 // addRoute adds a node with the given handle to the path.
 // here we set a Middleware because we have  to transfer all route's middlewares (it's a chain of functions) (with it's handler) to the node
 func (n *node) add(path string, handler http.HandlerFunc) (lp uint8) {
-
 	var err error
-
 	if path == blank {
 		path = basePath
 	}
@@ -188,12 +182,10 @@ func (n *node) add(path string, handler http.HandlerFunc) (lp uint8) {
 		n.insertChild(numParams, existing, path, fullPath, handler)
 		n.nType = isRoot
 	}
-
 	return
 }
 
 func (n *node) insertChild(numParams uint8, existing existingParams, path string, fullPath string, handler http.HandlerFunc) {
-
 	var offset int // already handled bytes of the path
 
 	// find prefix until first wildcard (beginning with paramByte' or wildByte')
@@ -225,7 +217,6 @@ func (n *node) insertChild(numParams uint8, existing existingParams, path string
 		}
 
 		if c == paramByte { // param
-
 			// check if the wildcard has a name
 			if end-i < 2 {
 				panic("wildcards must be named with a non-empty name in path '" + fullPath + "'")
@@ -297,11 +288,9 @@ func (n *node) insertChild(numParams uint8, existing existingParams, path string
 				priority: 1,
 			}
 			n.children = []*node{child}
-
 			return
 		}
 	}
-
 	if n.nType == hasParams {
 		existing.check(path[offset:], fullPath)
 	}
@@ -317,7 +306,6 @@ func (n *node) find(path string, mux *Mux) (handler http.HandlerFunc, rv *reques
 walk: // Outer loop for walking the tree
 	for {
 		if len(path) > len(n.path) {
-
 			if path[:len(n.path)] == n.path {
 				path = path[len(n.path):]
 
@@ -332,7 +320,6 @@ walk: // Outer loop for walking the tree
 							continue walk
 						}
 					}
-
 					return
 				}
 
@@ -340,13 +327,11 @@ walk: // Outer loop for walking the tree
 				n = n.children[0]
 				switch n.nType {
 				case hasParams:
-
 					// find param end (either '/' or path end)
 					end := 0
 					for end < len(path) && path[end] != slashByte {
 						end++
 					}
-
 					if rv == nil {
 						rv = mux.pool.Get().(*requestVars)
 						rv.params = rv.params[0:0]
@@ -365,51 +350,36 @@ walk: // Outer loop for walking the tree
 							n = n.children[0]
 							continue walk
 						}
-
 						return
 					}
-
 					if n.handler != nil {
 						handler = n.handler
 						return
-					} else if len(n.children) == 1 {
-						// No handle found. Check if a handle for this path
-						n = n.children[0]
 					}
-
 					return
 
 				case matchesAny:
-
 					if rv == nil {
 						rv = mux.pool.Get().(*requestVars)
 						rv.params = rv.params[0:0]
 					}
-
 					// save param value
 					i := len(rv.params)
 					rv.params = rv.params[:i+1] // expand slice within preallocated capacity
 					rv.params[i].key = WildcardParam
 					rv.params[i].value = path[1:]
-
 					handler = n.handler
 					return
-
-					// can't happen, but left here in case I'm wrong
-					// default:
-					// 	panic("invalid node type")
 				}
 			}
 
 		} else if path == n.path {
-
 			// We should have reached the node containing the handle.
 			// Check if this node has a handle registered.
 			if n.handler != nil {
 				handler = n.handler
 			}
 		}
-
 		// Nothing found
 		return
 	}

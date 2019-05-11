@@ -18,6 +18,8 @@ import (
 	"sync"
 	"testing"
 
+	httpext "github.com/go-playground/pkg/net/http"
+
 	. "gopkg.in/go-playground/assert.v1"
 )
 
@@ -57,23 +59,23 @@ func TestDecode(t *testing.T) {
 
 	p := New()
 	p.Post("/decode-noquery/:id", func(w http.ResponseWriter, r *http.Request) {
-		err := Decode(r, false, 16<<10, test)
+		err := Decode(r, httpext.NoQueryParams, 16<<10, test)
 		Equal(t, err, nil)
 	})
 	p.Post("/decode/:id", func(w http.ResponseWriter, r *http.Request) {
-		err := Decode(r, true, 16<<10, test)
+		err := Decode(r, httpext.QueryParams, 16<<10, test)
 		Equal(t, err, nil)
 	})
 	p.Post("/decode2/:id", func(w http.ResponseWriter, r *http.Request) {
-		err := Decode(r, false, 16<<10, test)
+		err := Decode(r, httpext.NoQueryParams, 16<<10, test)
 		Equal(t, err, nil)
 	})
 	p.Post("/decode3/:id", func(w http.ResponseWriter, r *http.Request) {
-		err := Decode(r, true, 16<<10, test)
+		err := Decode(r, httpext.QueryParams, 16<<10, test)
 		Equal(t, err, nil)
 	})
 	p.Get("/parse-params/:Posted", func(w http.ResponseWriter, r *http.Request) {
-		err := Decode(r, true, 16<<10, test)
+		err := Decode(r, httpext.QueryParams, 16<<10, test)
 		Equal(t, err, nil)
 	})
 
@@ -94,7 +96,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/14?id=13", strings.NewReader(form.Encode()))
-	r.Header.Set(ContentType, ApplicationForm)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationForm)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -106,7 +108,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/14", strings.NewReader(form.Encode()))
-	r.Header.Set(ContentType, ApplicationForm)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationForm)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -118,7 +120,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode2/13", strings.NewReader(form.Encode()))
-	r.Header.Set(ContentType, ApplicationForm)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationForm)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -141,7 +143,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/13?id=12", body)
-	r.Header.Set(ContentType, writer.FormDataContentType())
+	r.Header.Set(httpext.ContentType, writer.FormDataContentType())
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -163,7 +165,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode2/13", body)
-	r.Header.Set(ContentType, writer.FormDataContentType())
+	r.Header.Set(httpext.ContentType, writer.FormDataContentType())
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -185,7 +187,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode3/11", body)
-	r.Header.Set(ContentType, writer.FormDataContentType())
+	r.Header.Set(httpext.ContentType, writer.FormDataContentType())
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -197,7 +199,7 @@ func TestDecode(t *testing.T) {
 	jsonBody := `{"ID":13,"Posted":"value","MultiPartPosted":"value"}`
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/13", strings.NewReader(jsonBody))
-	r.Header.Set(ContentType, ApplicationJSON)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationJSON)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -209,7 +211,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/13?id=14", strings.NewReader(jsonBody))
-	r.Header.Set(ContentType, ApplicationJSON)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationJSON)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -232,8 +234,8 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/13?id=14", &buff)
-	r.Header.Set(ContentType, ApplicationJSON)
-	r.Header.Set(ContentEncoding, Gzip)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationJSON)
+	r.Header.Set(httpext.ContentEncoding, httpext.Gzip)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -245,7 +247,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode-noquery/13?id=14", strings.NewReader(jsonBody))
-	r.Header.Set(ContentType, ApplicationJSON)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationJSON)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -258,7 +260,7 @@ func TestDecode(t *testing.T) {
 	xmlBody := `<TestStruct><ID>13</ID><Posted>value</Posted><MultiPartPosted>value</MultiPartPosted></TestStruct>`
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/13", strings.NewReader(xmlBody))
-	r.Header.Set(ContentType, ApplicationXML)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationXML)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -270,7 +272,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode/13?id=14", strings.NewReader(xmlBody))
-	r.Header.Set(ContentType, ApplicationXML)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationXML)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -282,7 +284,7 @@ func TestDecode(t *testing.T) {
 
 	test = new(TestStruct)
 	r, _ = http.NewRequest(http.MethodPost, "/decode-noquery/13?id=14", strings.NewReader(xmlBody))
-	r.Header.Set(ContentType, ApplicationXML)
+	r.Header.Set(httpext.ContentType, httpext.ApplicationXML)
 	w = httptest.NewRecorder()
 
 	hf.ServeHTTP(w, r)
@@ -303,11 +305,11 @@ func TestDecodeQueryParams(t *testing.T) {
 
 	p := New()
 	p.Post("/decode-noquery/:id", func(w http.ResponseWriter, r *http.Request) {
-		err := DecodeQueryParams(r, false, test)
+		err := DecodeQueryParams(r, httpext.NoQueryParams, test)
 		Equal(t, err, nil)
 	})
 	p.Post("/decode/:id", func(w http.ResponseWriter, r *http.Request) {
-		err := DecodeQueryParams(r, true, test)
+		err := DecodeQueryParams(r, httpext.QueryParams, test)
 		Equal(t, err, nil)
 	})
 
@@ -368,7 +370,7 @@ func TestDecodeSEOQueryParams(t *testing.T) {
 func TestAcceptedLanguages(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/", nil)
-	req.Header.Set(AcceptedLanguage, "da, en-GB;q=0.8, en;q=0.7")
+	req.Header.Set(httpext.AcceptedLanguage, "da, en-GB;q=0.8, en;q=0.7")
 
 	languages := AcceptedLanguages(req)
 
@@ -376,13 +378,13 @@ func TestAcceptedLanguages(t *testing.T) {
 	Equal(t, languages[1], "en-GB")
 	Equal(t, languages[2], "en")
 
-	req.Header.Del(AcceptedLanguage)
+	req.Header.Del(httpext.AcceptedLanguage)
 
 	languages = AcceptedLanguages(req)
 
 	Equal(t, len(languages), 0)
 
-	req.Header.Set(AcceptedLanguage, "")
+	req.Header.Set(httpext.AcceptedLanguage, "")
 	languages = AcceptedLanguages(req)
 
 	Equal(t, len(languages), 0)
@@ -415,8 +417,8 @@ func TestAttachment(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentDisposition), "attachment;filename=logo.png")
-	Equal(t, w.Header().Get(ContentType), "image/png")
+	Equal(t, w.Header().Get(httpext.ContentDisposition), "attachment;filename=logo.png")
+	Equal(t, w.Header().Get(httpext.ContentType), "image/png")
 	Equal(t, w.Body.Len(), 20797)
 
 	r, _ = http.NewRequest(http.MethodGet, "/dl-unknown-type", nil)
@@ -428,8 +430,8 @@ func TestAttachment(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentDisposition), "attachment;filename=logo")
-	Equal(t, w.Header().Get(ContentType), "application/octet-stream")
+	Equal(t, w.Header().Get(httpext.ContentDisposition), "attachment;filename=logo")
+	Equal(t, w.Header().Get(httpext.ContentType), "application/octet-stream")
 	Equal(t, w.Body.Len(), 20797)
 }
 
@@ -459,8 +461,8 @@ func TestInline(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentDisposition), "inline;filename=logo.png")
-	Equal(t, w.Header().Get(ContentType), "image/png")
+	Equal(t, w.Header().Get(httpext.ContentDisposition), "inline;filename=logo.png")
+	Equal(t, w.Header().Get(httpext.ContentType), "image/png")
 	Equal(t, w.Body.Len(), 20797)
 
 	r, _ = http.NewRequest(http.MethodGet, "/dl-unknown-type-inline", nil)
@@ -472,8 +474,8 @@ func TestInline(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentDisposition), "inline;filename=logo")
-	Equal(t, w.Header().Get(ContentType), "application/octet-stream")
+	Equal(t, w.Header().Get(httpext.ContentDisposition), "inline;filename=logo")
+	Equal(t, w.Header().Get(httpext.ContentType), "application/octet-stream")
 	Equal(t, w.Body.Len(), 20797)
 }
 
@@ -499,7 +501,8 @@ func TestClientIP(t *testing.T) {
 
 func TestJSON(t *testing.T) {
 
-	jsonData := `{"id":1,"name":"Patient Zero"}`
+	jsonData := `{"id":1,"name":"Patient Zero"}
+`
 	callbackFunc := "CallbackFunc"
 
 	p := New()
@@ -538,7 +541,7 @@ func TestJSON(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentType), ApplicationJSONCharsetUTF8)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.ApplicationJSON)
 	Equal(t, w.Body.String(), jsonData)
 
 	r, _ = http.NewRequest(http.MethodGet, "/badjson", nil)
@@ -546,7 +549,7 @@ func TestJSON(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusInternalServerError)
-	Equal(t, w.Header().Get(ContentType), TextPlainCharsetUTF8)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.TextPlain)
 	Equal(t, w.Body.String(), "json: unsupported type: func()\n")
 
 	r, _ = http.NewRequest(http.MethodGet, "/jsonbytes", nil)
@@ -554,7 +557,7 @@ func TestJSON(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentType), ApplicationJSONCharsetUTF8)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.ApplicationJSON)
 	Equal(t, w.Body.String(), "\"Patient Zero\"")
 
 	r, _ = http.NewRequest(http.MethodGet, "/jsonp", nil)
@@ -562,15 +565,15 @@ func TestJSON(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentType), ApplicationJavaScriptCharsetUTF8)
-	Equal(t, w.Body.String(), callbackFunc+"("+jsonData+");")
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.ApplicationJSON)
+	Equal(t, w.Body.String(), callbackFunc+"("+jsonData[:len(jsonData)-1]+");")
 
 	r, _ = http.NewRequest(http.MethodGet, "/badjsonp", nil)
 	w = httptest.NewRecorder()
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusInternalServerError)
-	Equal(t, w.Header().Get(ContentType), TextPlainCharsetUTF8)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.TextPlain)
 	Equal(t, w.Body.String(), "json: unsupported type: func()\n")
 }
 
@@ -604,7 +607,7 @@ func TestXML(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentType), ApplicationXMLCharsetUTF8)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.ApplicationXML)
 	Equal(t, w.Body.String(), xml.Header+xmlData)
 
 	r, _ = http.NewRequest(http.MethodGet, "/xmlbytes", nil)
@@ -612,7 +615,7 @@ func TestXML(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
-	Equal(t, w.Header().Get(ContentType), ApplicationXMLCharsetUTF8)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.ApplicationXML)
 	Equal(t, w.Body.String(), xml.Header+xmlData)
 
 	r, _ = http.NewRequest(http.MethodGet, "/badxml", nil)
@@ -620,14 +623,12 @@ func TestXML(t *testing.T) {
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusInternalServerError)
-	Equal(t, w.Header().Get(ContentType), TextPlainCharsetUTF8)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.TextPlain)
 	Equal(t, w.Body.String(), "xml: unsupported type: func()\n")
 }
 
 func TestBadParseForm(t *testing.T) {
-
 	// successful scenarios tested under TestDecode
-
 	p := New()
 	p.Get("/users/:id", func(w http.ResponseWriter, r *http.Request) {
 
@@ -645,9 +646,7 @@ func TestBadParseForm(t *testing.T) {
 }
 
 func TestBadParseMultiPartForm(t *testing.T) {
-
 	// successful scenarios tested under TestDecode
-
 	p := New()
 	p.Get("/users/:id", func(w http.ResponseWriter, r *http.Request) {
 
@@ -673,8 +672,8 @@ type gzipWriter struct {
 func (w *gzipWriter) Write(b []byte) (int, error) {
 
 	if !w.sniffComplete {
-		if w.Header().Get(ContentType) == "" {
-			w.Header().Set(ContentType, http.DetectContentType(b))
+		if w.Header().Get(httpext.ContentType) == "" {
+			w.Header().Set(httpext.ContentType, http.DetectContentType(b))
 		}
 		w.sniffComplete = true
 	}
@@ -688,10 +687,6 @@ func (w *gzipWriter) Flush() error {
 
 func (w *gzipWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return w.ResponseWriter.(http.Hijacker).Hijack()
-}
-
-func (w *gzipWriter) CloseNotify() <-chan bool {
-	return w.ResponseWriter.(http.CloseNotifier).CloseNotify()
 }
 
 var gzipPool = sync.Pool{
@@ -709,9 +704,9 @@ func Gzip2(next http.HandlerFunc) http.HandlerFunc {
 		var gz *gzipWriter
 		var gzr *gzip.Writer
 
-		w.Header().Add(Vary, AcceptEncoding)
+		w.Header().Add(httpext.Vary, httpext.AcceptEncoding)
 
-		if strings.Contains(r.Header.Get(AcceptEncoding), Gzip) {
+		if strings.Contains(r.Header.Get(httpext.AcceptEncoding), httpext.Gzip) {
 
 			gz = gzipPool.Get().(*gzipWriter)
 			gz.sniffComplete = false
@@ -719,7 +714,7 @@ func Gzip2(next http.HandlerFunc) http.HandlerFunc {
 			gzr.Reset(w)
 			gz.ResponseWriter = w
 
-			w.Header().Set(ContentEncoding, Gzip)
+			w.Header().Set(httpext.ContentEncoding, httpext.Gzip)
 
 			w = gz
 			defer func() {
@@ -728,7 +723,7 @@ func Gzip2(next http.HandlerFunc) http.HandlerFunc {
 				if !gz.sniffComplete {
 					// We have to reset response to it's pristine state when
 					// nothing is written to body.
-					w.Header().Del(ContentEncoding)
+					w.Header().Del(httpext.ContentEncoding)
 					gzr.Reset(ioutil.Discard)
 				}
 

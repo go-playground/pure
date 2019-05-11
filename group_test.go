@@ -213,17 +213,17 @@ func TestGrouplogic(t *testing.T) {
 
 	a := p.GroupWithMore("/a", aM)
 	a.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("a-ok"))
+		_, _ = w.Write([]byte("a-ok"))
 	})
 
 	b := a.GroupWithMore("/b", bM)
 	b.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("b-ok"))
+		_, _ = w.Write([]byte("b-ok"))
 	})
 
 	c := b.GroupWithMore("/c", cM)
 	c.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("c-ok"))
+		_, _ = w.Write([]byte("c-ok"))
 	})
 
 	code, body := request(http.MethodGet, "/a/test", p)
