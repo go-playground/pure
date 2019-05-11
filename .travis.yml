@@ -15,11 +15,8 @@ notifications:
 before_install:
   - go get -u github.com/go-playground/overalls
   - go get -u github.com/mattn/goveralls
-  - go get -u github.com/client9/misspell/cmd/misspell
 
 script:
- - find . -type f | xargs misspell -source=text
- - gofmt -d -s .
  - make lint
  - make test
 
