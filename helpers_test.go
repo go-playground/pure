@@ -501,8 +501,7 @@ func TestClientIP(t *testing.T) {
 
 func TestJSON(t *testing.T) {
 
-	jsonData := `{"id":1,"name":"Patient Zero"}
-`
+	jsonData := `{"id":1,"name":"Patient Zero"}`
 	callbackFunc := "CallbackFunc"
 
 	p := New()
@@ -566,7 +565,7 @@ func TestJSON(t *testing.T) {
 
 	Equal(t, w.Code, http.StatusOK)
 	Equal(t, w.Header().Get(httpext.ContentType), httpext.ApplicationJSON)
-	Equal(t, w.Body.String(), callbackFunc+"("+jsonData[:len(jsonData)-1]+");")
+	Equal(t, w.Body.String(), callbackFunc+"("+jsonData+");")
 
 	r, _ = http.NewRequest(http.MethodGet, "/badjsonp", nil)
 	w = httptest.NewRecorder()
