@@ -2,5 +2,8 @@ github.com/go-playground/form v3.1.4+incompatible h1:lvKiHVxE2WvzDIoyMnWcjyiBxKt
 github.com/go-playground/form v3.1.4+incompatible/go.mod h1:lhcKXfTuhRtIZCIKUeJ0b5F207aeQCPbZU09ScKjwWg=
 github.com/go-playground/pkg v0.0.0-20190511145249-fa4bcb050f1d h1:dLyXECWWFoQAp49e+ayPJyTcVAVOSAEmZ/QALeOuIfg=
 github.com/go-playground/pkg v0.0.0-20190511145249-fa4bcb050f1d/go.mod h1:Wg1j+HqWLhhVIfYdaoOuBzdutBEVcqwvBxgFZRWbybk=
+github.com/go-playground/pkg v0.0.0-20190513231740-fa00488a1202 h1:jcKZzz6ZD5IIQCG6TqMSvo/316htYd0fUz6zBXXUexE=
+github.com/go-playground/pkg v0.0.0-20190513231740-fa00488a1202/go.mod h1:Wg1j+HqWLhhVIfYdaoOuBzdutBEVcqwvBxgFZRWbybk=
+github.com/go-playground/pkg v1.0.1 h1:EsBCgjDTrlaLCflFChT2Q/M4unQQS6DnBDvHTA+fVAI=
 gopkg.in/go-playground/assert.v1 v1.2.1 h1:xoYuJVE7KT85PYWrN730RguIQO0ePzVRfFMXadIrXTM=
 gopkg.in/go-playground/assert.v1 v1.2.1/go.mod h1:9RXL0bg/zibRAgZUYszZSwO/z8Y/a8bDuhia5mkpMnE=
