@@ -10,9 +10,9 @@ import (
 	"strings"
 	"sync"
 
-	httpext "github.com/go-playground/pkg/net/http"
+	httpext "github.com/go-playground/pkg/v4/net/http"
 
-	"github.com/go-playground/pure"
+	"github.com/go-playground/pure/v5"
 )
 
 type gzipWriter struct {

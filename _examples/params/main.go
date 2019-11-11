@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/go-playground/pure"
-	mw "github.com/go-playground/pure/_examples/middleware/logging-recovery"
+	"github.com/go-playground/pure/v5"
+	mw "github.com/go-playground/pure/v5/_examples/middleware/logging-recovery"
 )
 
 func main() {

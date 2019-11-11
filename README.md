@@ -1,6 +1,6 @@
 package pure
 ============
-<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-5.0.3-green.svg)
+<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-5.0.4-green.svg)
 [![Build Status](https://travis-ci.org/go-playground/pure.svg?branch=master)](https://travis-ci.org/go-playground/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -11,7 +11,7 @@ package pure
 Pure is a fast radix-tree based HTTP router that sticks to the native implementations of Go's "net/http" package;
 in essence, keeping the handler implementations 'pure' by using Go 1.7's "context" package.
 
-This makes heavy usage of `github.com/go-playground/pkg` for HTTP abstractions.
+This makes heavy usage of `github.com/go-playground/pkg/v4` for HTTP abstractions.
 
 Why Another HTTP Router?
 ------------------------
@@ -28,7 +28,7 @@ Installation
 Use go get 
 
 ```shell
-go get -u github.com/go-playground/pure
+go get -u github.com/go-playground/pure/v5
 ```
 
 Usage
@@ -39,8 +39,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/go-playground/pure"
-	mw "github.com/go-playground/pure/_examples/middleware/logging-recovery"
+	"github.com/go-playground/pure/v5"
+	mw "github.com/go-playground/pure/v5/_examples/middleware/logging-recovery"
 )
 
 func main() {

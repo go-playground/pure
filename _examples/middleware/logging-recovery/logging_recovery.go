@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-playground/ansi"
-	"github.com/go-playground/pure"
+	"github.com/go-playground/pure/v5"
 )
 
 const (

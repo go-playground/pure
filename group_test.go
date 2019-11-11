@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	. "gopkg.in/go-playground/assert.v1"
+	. "github.com/go-playground/assert/v2"
 )
 
 // NOTES:

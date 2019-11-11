@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	httpext "github.com/go-playground/pkg/net/http"
+	httpext "github.com/go-playground/pkg/v4/net/http"
 )
 
 // RequestVars returns the request scoped variables tracked by pure
