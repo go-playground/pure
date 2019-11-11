@@ -18,9 +18,9 @@ import (
 	"sync"
 	"testing"
 
-	httpext "github.com/go-playground/pkg/net/http"
+	httpext "github.com/go-playground/pkg/v4/net/http"
 
-	. "gopkg.in/go-playground/assert.v1"
+	. "github.com/go-playground/assert/v2"
 )
 
 // NOTES:

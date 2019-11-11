@@ -11,10 +11,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	httpext "github.com/go-playground/pkg/net/http"
+	httpext "github.com/go-playground/pkg/v4/net/http"
 
-	"github.com/go-playground/pure"
-	. "gopkg.in/go-playground/assert.v1"
+	. "github.com/go-playground/assert/v2"
+	"github.com/go-playground/pure/v5"
 )
 
 // NOTES:

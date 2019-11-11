@@ -1,6 +1,6 @@
 language: go
 go:
-    - 1.12.5
+    - 1.13.4
     - tip
 matrix:
   allow_failures:
@@ -15,13 +15,12 @@ notifications:
 before_install:
   - go get -u github.com/go-playground/overalls
   - go get -u github.com/mattn/goveralls
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.16.0
 
 script:
  - make test
- - ./bin/golangci-lint run
+ - make lint
 
 after_success: |
-  [ $TRAVIS_GO_VERSION = 1.12.5 ] &&
+  [ $TRAVIS_GO_VERSION = 1.13.4 ] &&
   overalls -project="github.com/go-playground/pure" -covermode=count -ignore=.git,examples -debug &&
   goveralls -coverprofile=overalls.coverprofile -service travis-ci -repotoken $COVERALLS_TOKEN

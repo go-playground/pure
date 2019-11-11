@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"testing"
 
-	httpext "github.com/go-playground/pkg/net/http"
-	. "gopkg.in/go-playground/assert.v1"
+	. "github.com/go-playground/assert/v2"
+	httpext "github.com/go-playground/pkg/v4/net/http"
 )
 
 // NOTES:
