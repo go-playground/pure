@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-playground/ansi"
+	"github.com/go-playground/ansi/v3"
 	"github.com/go-playground/pure/v5"
 )
 
