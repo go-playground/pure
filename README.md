@@ -1,17 +1,17 @@
 package pure
 ============
-<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-5.0.5-green.svg)
+<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-5.1.0-green.svg)
 [![Build Status](https://travis-ci.org/go-playground/pure.svg?branch=master)](https://travis-ci.org/go-playground/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
-[![GoDoc](https://godoc.org/github.com/go-playground/pure?status.svg)](https://godoc.org/github.com/go-playground/pure)
+[![GoDoc](https://godoc.org/github.com/go-playground/pure?status.svg)](https://pkg.go.dev/github.com/go-playground/pure)
 ![License](https://img.shields.io/dub/l/vibe-d.svg)
 [![Gitter](https://badges.gitter.im/go-playground/pure.svg)](https://gitter.im/go-playground/pure?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Pure is a fast radix-tree based HTTP router that sticks to the native implementations of Go's "net/http" package;
 in essence, keeping the handler implementations 'pure' by using Go 1.7's "context" package.
 
-This makes heavy usage of `github.com/go-playground/pkg/v4` for HTTP abstractions.
+This makes heavy usage of `github.com/go-playground/pkg/v5` for HTTP abstractions.
 
 Why Another HTTP Router?
 ------------------------

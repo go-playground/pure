@@ -6,7 +6,8 @@ import (
 	"net/url"
 	"strings"
 
-	httpext "github.com/go-playground/pkg/v4/net/http"
+	httpext "github.com/go-playground/pkg/v5/net/http"
+	urlext "github.com/go-playground/pkg/v5/net/url"
 )
 
 // RequestVars returns the request scoped variables tracked by pure
@@ -235,4 +236,9 @@ func QueryParams(r *http.Request, qp httpext.QueryParamsOption) (values url.Valu
 		}
 	}
 	return
+}
+
+// EncodeToURLValues encodes a struct or field into a set of url.Values
+func EncodeToURLValues(v interface{}) (url.Values, error) {
+	return urlext.EncodeToURLValues(v)
 }
