@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	httpext "github.com/go-playground/pkg/v4/net/http"
+	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
 var (

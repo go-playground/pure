@@ -1,13 +1,7 @@
 GOCMD=GO111MODULE=on go
 
-linters-install:
-	@golangci-lint --version >/dev/null 2>&1 || { \
-		echo "installing linting tools..."; \
-		curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0; \
-	}
-
-lint: linters-install
-	$(PWD)/bin/golangci-lint run
+lint:
+	golint -set_exit_status ./...
 
 test:
 	$(GOCMD) test -cover -race ./...
@@ -15,4 +9,4 @@ test:
 bench:
 	$(GOCMD) test -bench=. -benchmem ./...
 
-.PHONY: linters-install lint test bench
+.PHONY: lint test bench
