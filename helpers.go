@@ -45,6 +45,15 @@ func ClientIP(r *http.Request) (clientIP string) {
 	return httpext.ClientIP(r)
 }
 
+//
+// JSONStream uses json.Encoder to stream the JSON reponse body.
+//
+// This differs from the JSON helper which unmarshalls into memory first allowing the capture of JSON encoding errors.
+//
+func JSONStream(w http.ResponseWriter, status int, i interface{}) error {
+	return httpext.JSONStream(w, status, i)
+}
+
 // JSON marshals provided interface + returns JSON + status code
 func JSON(w http.ResponseWriter, status int, i interface{}) error {
 	return httpext.JSON(w, status, i)

@@ -506,6 +506,11 @@ func TestJSON(t *testing.T) {
 
 	p := New()
 	p.Use(Gzip2)
+	p.Get("/jsonstream", func(w http.ResponseWriter, r *http.Request) {
+		if err := JSONStream(w, http.StatusOK, zombie{1, "Patient Zero"}); err != nil {
+			panic(err)
+		}
+	})
 	p.Get("/json", func(w http.ResponseWriter, r *http.Request) {
 		if err := JSON(w, http.StatusOK, zombie{1, "Patient Zero"}); err != nil {
 			panic(err)
@@ -535,8 +540,16 @@ func TestJSON(t *testing.T) {
 
 	hf := p.Serve()
 
-	r, _ := http.NewRequest(http.MethodGet, "/json", nil)
+	r, _ := http.NewRequest(http.MethodGet, "/jsonstream", nil)
 	w := httptest.NewRecorder()
+	hf.ServeHTTP(w, r)
+
+	Equal(t, w.Code, http.StatusOK)
+	Equal(t, w.Header().Get(httpext.ContentType), httpext.ApplicationJSON)
+	Equal(t, w.Body.String(), jsonData+"\n")
+
+	r, _ = http.NewRequest(http.MethodGet, "/json", nil)
+	w = httptest.NewRecorder()
 	hf.ServeHTTP(w, r)
 
 	Equal(t, w.Code, http.StatusOK)
