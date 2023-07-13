@@ -1,6 +1,6 @@
 package pure
 ============
-<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-5.2.0-green.svg)
+<img align="right" src="https://raw.githubusercontent.com/go-playground/pure/master/logo.png">![Project status](https://img.shields.io/badge/version-5.3.0-green.svg)
 [![Build Status](https://travis-ci.org/go-playground/pure.svg?branch=master)](https://travis-ci.org/go-playground/pure)
 [![Coverage Status](https://coveralls.io/repos/github/go-playground/pure/badge.svg?branch=master)](https://coveralls.io/github/go-playground/pure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-playground/pure)](https://goreportcard.com/report/github.com/go-playground/pure)
@@ -163,7 +163,7 @@ Run on i5-7600 16 GB DDR4-2400 using Go version go1.12.5 darwin/amd64
 NOTICE: pure uses a custom version of [httprouter](https://github.com/julienschmidt/httprouter)'s radix tree, benchmarks can be found [here](https://github.com/deankarn/go-http-routing-benchmark/tree/pure-and-lars) the slowdown is with the use of the `context` package, as you can see when no SEO params are defined, and therefore no need to store anything in the context, it is faster than even lars.
 
 ```go
-go test -bench=. -benchmem=true
+go test -bench=. -benchmem=true ./...
 #GithubAPI Routes: 203
    Pure: 37096 Bytes
 
@@ -178,34 +178,25 @@ go test -bench=. -benchmem=true
    Pure: 21096 Bytes
 
 
-BenchmarkPure_Param             10000000               184 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_Param5            10000000               236 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_Param20            5000000               393 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_ParamWrite         5000000               240 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_GithubStatic      50000000                36.2 ns/op             0 B/op          0 allocs/op
-BenchmarkPureGithubParam        10000000               230 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_GithubAll            30000             43887 ns/op           64130 B/op        334 allocs/op
-BenchmarkPure_GPlusStatic       50000000                22.8 ns/op             0 B/op          0 allocs/op
-BenchmarkPure_GPlusParam        10000000               192 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_GPlus2Params      10000000               211 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_GPlusAll            500000              2457 ns/op            4224 B/op         22 allocs/op
-BenchmarkPure_ParseStatic       100000000               23.7 ns/op             0 B/op          0 allocs/op
-BenchmarkPure_ParseParam        10000000               177 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_Parse2Params      10000000               193 ns/op             384 B/op          2 allocs/op
-BenchmarkPure_ParseAll            500000              3751 ns/op            6144 B/op         32 allocs/op
-BenchmarkPure_StaticAll           200000              8574 ns/op               0 B/op          0 allocs/op
+goos: darwin
+goarch: arm64
+BenchmarkPure_Param             11965519               100.4 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_Param5             8756385               138.6 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_Param20            4335284               276.5 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_ParamWrite         9980685               120.0 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_GithubStatic      47743062                24.77 ns/op            0 B/op          0 allocs/op
+BenchmarkPure_GithubParam        8514968               139.8 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_GithubAll            42250             28333 ns/op           42753 B/op        167 allocs/op
+BenchmarkPure_GPlusStatic       87363000                13.39 ns/op            0 B/op          0 allocs/op
+BenchmarkPure_GPlusParam        10398274               113.0 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_GPlus2Params       9235220               128.7 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_GPlusAll            792037              1526 ns/op            2816 B/op         11 allocs/op
+BenchmarkPure_ParseStatic       79194198                14.96 ns/op            0 B/op          0 allocs/op
+BenchmarkPure_ParseParam        11391336               104.5 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_Parse2Params      10103078               116.2 ns/op           256 B/op          1 allocs/op
+BenchmarkPure_ParseAll            498306              2417 ns/op            4096 B/op         16 allocs/op
+BenchmarkPure_StaticAll           219930              5225 ns/op               0 B/op          0 allocs/op
 ```
-
-Package Versioning
-----------
-I'm jumping on the vendoring bandwagon, you should vendor this package as I will not
-be creating different version with gopkg.in like allot of my other libraries.
-
-Why? because my time is spread pretty thin maintaining all of the libraries I have + LIFE,
-it is so freeing not to worry about it and will help me keep pouring out bigger and better
-things for you the community.
-
-I am open versioning with gopkg.in should anyone request it, but this should be stable going forward.
 
 Licenses
 --------
