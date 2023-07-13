@@ -1,7 +1,7 @@
 GOCMD=GO111MODULE=on go
 
 lint:
-	golint -set_exit_status ./...
+	golangci-lint run
 
 test:
 	$(GOCMD) test -cover -race ./...

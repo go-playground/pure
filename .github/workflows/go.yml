@@ -4,17 +4,17 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.15.x,1.14.x,1.13.x]
+        go-version: [1.17.x,1.20.x]
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
 
       - name: Priming Cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-v1-go-${{ hashFiles('**/go.sum') }}
@@ -22,14 +22,17 @@ jobs:
             ${{ runner.os }}-v1-go-
 
       - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Lint
-        if: matrix.platform == 'ubuntu-latest' && matrix.go-version == '1.15.x'
-        run: |
-          export PATH=$PATH:$(go env GOPATH)/bin # temporary fix. See https://github.com/actions/setup-go/issues/14
-          go get -u golang.org/x/lint/golint
-          golint -set_exit_status ./...
+        uses: actions/checkout@v3
 
       - name: Test
         run: go test ./...
+
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
